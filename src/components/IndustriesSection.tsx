@@ -52,12 +52,12 @@ const cardVariants = {
 
 export default function IndustriesSlider() {
   return (
-    <section className="bg-[#fcf7f0] py-10  md:px-2 px-6 sm:px-4">
+    <section className=" py-10  md:px-2 px-6 sm:px-4">
       <div className=" md:max-w-6xl mx-auto flex flex-col md:flex-row items-start gap-8">
         {/* Left: Title and Description */}
         <div className="w-full md:w-1/3 mb-8 md:mb-0 flex flex-col justify-center text-center md:text-left">
           <div className="flex items-center justify-center md:justify-start mb-2">
-            <span className="text-2xl font-bold text-orange-500 flex items-center">   <svg width="120" height="28" viewBox="0 0 120 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-3">
+            <span className="text-2xl font-bold text-black flex items-center">   <svg width="120" height="28" viewBox="0 0 120 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-3">
               <line x1="2" y1="14" x2="110" y2="14" stroke="#ee7822" strokeWidth="3" strokeLinecap="round" />
               <polyline points="100,7 110,14 100,21" fill="none" stroke="#ee7822" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
             </svg>Industries</span>
