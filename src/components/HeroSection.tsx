@@ -69,10 +69,10 @@ export default function HeroSection() {
       {/* Overlay - light for minimal look */}
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-gray-500/60 to-transparent z-10" />
       {/* Content */}
-      <div className="relative px-24 z-20 max-w-full w-full py-16 flex flex-col gap-6">
+      <div className="relative px-24 z-20 max-w-fullflex flex-col py-16 w-full gap-6">
         {/* Badge */}
         <div className="mb-4">
-          <span className="inline-block px-5 py-2 border border-blue-500 text-blue-500  rounded-full font-semibold text-base shadow-sm">
+          <span className="inline-block px-5 py-2 border border-blue-500 text-blue-500 rounded-full font-semibold text-base shadow-sm">
             Trusted HR Solutions Partner
           </span>
         </div>
@@ -81,13 +81,9 @@ export default function HeroSection() {
           Empowering Organizations with <span className="text-blue-500">{typed}<span className="animate-blink">|</span></span>
         </h1>
         {/* Concise subheadline */}
-        <p className="text-lg text-white max-w-2xl">
+        <p className="text-body text-white max-w-2xl">
           Prime HR Solutions delivers expert recruitment, outsourcing, and HR services for leading organizations across India.
         </p>
-        {/* <p className="text-base text-gray-600 max-w-2xl">
-          Let's build a successful partnership.<br/>
-          <span className="italic">Prime HR Solutions</span>
-        </p> */}
       </div>
       <style jsx>{`
         @keyframes blink {

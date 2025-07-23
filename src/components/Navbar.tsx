@@ -26,12 +26,12 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-8 flex items-center justify-between h-16">
         {/* Logo */}
         <Link href="/" className="text-xl font-bold text-blue-700">
-        <Image src={'/logo.png'} alt="PRIME HR SOLUTION" width={100} height={100}/>
+        <Image src={'/logo.png'} alt="PRIME HR SOLUTION" width={100} height={100} className="h-20 w-20 object-cover" />
        </Link>
         {/* Desktop Nav Links */}
         <div className="hidden md:flex gap-6 items-center">
           {navLinks.map(link => (
-            <a
+            <Link
               key={link.name}
               href={link.href}
               className={`relative font-medium px-2 py-1 transition-colors duration-200
@@ -41,13 +41,13 @@ export default function Navbar() {
               style={{ zIndex: 1 }}
             >
               {link.name}
-            </a>
+            </Link>
           ))}
         </div>
         {/* Desktop Auth Buttons */}
         <div className="hidden md:flex gap-2 items-center ml-4">
-          <a href="/login" className="px-4 py-1 rounded border border-blue-700 text-blue-700 font-semibold hover:bg-blue-50 transition-colors">Login</a>
-          <a href="/signup" className="px-4 py-1 rounded bg-blue-700 text-white font-semibold hover:bg-blue-800 transition-colors">Sign Up</a>
+          <Link href="/auth/login" className="px-4 py-1 rounded border border-blue-700 text-blue-700 font-semibold hover:bg-blue-50 transition-colors">Login</Link>
+          <Link href="/auth/register" className="px-4 py-1 rounded bg-blue-700 text-white font-semibold hover:bg-blue-800 transition-colors">Sign Up</Link>
         </div>
         {/* Hamburger Icon */}
         <button
@@ -77,20 +77,20 @@ export default function Navbar() {
         {/* Mobile Nav Links */}
         <div className="flex flex-col gap-8 items-center w-full">
           {navLinks.map(link => (
-            <a
+            <Link
               key={link.name}
               href={link.href}
               className={`text-2xl font-semibold px-4 py-2 transition-colors duration-200 rounded hover:bg-blue-100 hover:text-blue-700 ${isActive(link.href) ? 'text-blue-700 underline' : 'text-black'}`}
               onClick={() => setOpen(false)}
             >
               {link.name}
-            </a>
+            </Link>
           ))}
         </div>
         {/* Mobile Auth Buttons */}
         <div className="flex flex-col gap-3 items-center w-full mt-8">
-          <a href="/login" className="w-4/5 text-center px-4 py-2 rounded border border-blue-700 text-blue-700 font-semibold hover:bg-blue-50 transition-colors">Login</a>
-          <a href="/signup" className="w-4/5 text-center px-4 py-2 rounded bg-blue-700 text-white font-semibold hover:bg-blue-800 transition-colors">Sign Up</a>
+          <Link href="/auth/login" className="w-4/5 text-center px-4 py-2 rounded border border-blue-700 text-blue-700 font-semibold hover:bg-blue-50 transition-colors">Login</Link>
+          <Link href="/auth/register" className="w-4/5 text-center px-4 py-2 rounded bg-blue-700 text-white font-semibold hover:bg-blue-800 transition-colors">Sign Up</Link>
         </div>
       </div>
       <style jsx>{`

@@ -30,9 +30,8 @@ const companies = [
 const CompaniesSection = () => {
   return (
     <section className="w-full flex flex-col items-center py-12 bg-white">
-        <h1 className="text-black tracking-wider text-3xl mb-2">The Company we Keep
-        </h1>
-        <p className="text-gray-700 text-base mb-4" >Trusted by 51+ companies</p>
+      <h1 className="text-heading mb-2">The Company we Keep</h1>
+      <p className="text-body mb-4">Trusted by 51+ companies</p>
       <Swiper
         modules={[Autoplay]}
         spaceBetween={20}
@@ -59,7 +58,7 @@ const CompaniesSection = () => {
           </SwiperSlide>
         ))}
       </Swiper>
-     </section>
+    </section>
   );
 };
 

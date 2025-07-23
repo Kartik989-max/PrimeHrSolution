@@ -19,7 +19,7 @@ export default function Register() {
           <button className="w-full bg-blue-700 text-white py-3 rounded-lg font-semibold hover:bg-blue-800 transition">Register</button>
         </form>
         <div className="mt-6 text-sm">
-          Already have an account? <Link href="/login" className="text-blue-700 underline">Login</Link>
+          Already have an account? <Link href="/auth/login" className="text-blue-700 underline">Login</Link>
         </div>
       </div>
       {/* Right: Illustration/Background */}

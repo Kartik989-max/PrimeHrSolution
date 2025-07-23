@@ -86,6 +86,7 @@ export default function StatsSection() {
       className={`w-full flex flex-col items-center py-12  transition-opacity duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
       style={{ transitionProperty: 'opacity, transform' }}
     >
+      <h2 className="text-heading mb-8">Our Impact</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 w-full max-w-4xl">
         {stats.map((stat, i) => {
           // Format with commas for large numbers
@@ -100,7 +101,7 @@ export default function StatsSection() {
                 {display}
                 {stat.suffix}
               </span>
-              <span className="text-base text-gray-700 text-center font-medium">
+              <span className="text-subheading text-center">
                 {stat.label}
               </span>
             </div>
