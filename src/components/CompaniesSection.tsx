@@ -3,6 +3,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/autoplay";
+import Image from "next/image";
 
 const companies = [
   { name: "Company 1", logo: "/company_logo/logo1.png" },
@@ -47,7 +48,9 @@ const CompaniesSection = () => {
         {companies.map((company, idx) => (
           <SwiperSlide key={idx} className="flex items-center justify-center">
             <div className="h-24 w-32 flex items-center justify-center  rounded  p-2">
-              <img
+              <Image
+                width={100}
+                height={100}
                 src={company.logo}
                 alt={company.name}
                 className="object-contain max-h-full max-w-full  hover:grayscale-0 transition duration-300"

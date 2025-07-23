@@ -44,7 +44,7 @@ export default function AboutSection() {
       <div className="flex flex-col md:flex-row items-center justify-center gap-10 w-full max-w-6xl px-4 md:px-0">
         <div className="w-full md:w-1/2 flex items-center justify-center">
           <p className="text-base md:text-lg text-center md:text-left text-gray-700 max-w-2xl font-normal leading-relaxed">
-            Prime HR Solutions is a leading manpower and HR solutions agency based in Delhi NCR, trusted by top organizations across industries such as Power, Sugar, Paper, IT, and Services. With a team of seasoned HR professionals, we offer a wide range of services including Executive Search, Manpower Outsourcing, Payroll Management, Statutory Compliance, HR Policy Development, and Technical & Behavioral Training. We are committed to building long-term, value-driven partnerships that support our clients' growth through strategic talent solutions.
+            Prime HR Solutions is a leading manpower and HR solutions agency based in Delhi NCR, trusted by top organizations across industries such as Power, Sugar, Paper, IT, and Services. With a team of seasoned HR professionals, we offer a wide range of services including Executive Search, Manpower Outsourcing, Payroll Management, Statutory Compliance, HR Policy Development, and Technical & Behavioral Training. We are committed to building long-term, value-driven partnerships that support our client&apos;s growth through strategic talent solutions.
           </p>
         </div>
         <div className="w-full md:w-1/2 flex items-center justify-center mt-8 md:mt-0">

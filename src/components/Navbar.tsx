@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
+import Link from "next/link";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -24,9 +25,9 @@ export default function Navbar() {
     <nav className="sticky top-0 z-30 w-full bg-white/90 backdrop-blur border-b border-gray-200 shadow-sm font-sans" style={{ fontFamily: 'Montserrat, Arial, sans-serif' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-8 flex items-center justify-between h-16">
         {/* Logo */}
-        <a href="/" className="text-xl font-bold text-blue-700">
+        <Link href="/" className="text-xl font-bold text-blue-700">
         <Image src={'/logo.png'} alt="PRIME HR SOLUTION" width={100} height={100}/>
-       </a>
+       </Link>
         {/* Desktop Nav Links */}
         <div className="hidden md:flex gap-6 items-center">
           {navLinks.map(link => (

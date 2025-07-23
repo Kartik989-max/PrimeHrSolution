@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const user = await User.create({ name, email, password: hashedPassword });
     res.status(201).json({ message: 'User created', user: { name: user.name, email: user.email } });
-  } catch (err) {
+  } catch  {
     res.status(400).json({ error: 'User already exists or invalid data' });
   }
 } 

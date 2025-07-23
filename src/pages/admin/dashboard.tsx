@@ -2,6 +2,18 @@ import React, { useEffect, useState } from "react";
 import { FiHome, FiAward, FiFileText, FiImage, FiMail, FiSettings, FiChevronDown, FiUser, FiPlusCircle, FiBriefcase } from "react-icons/fi";
 import { useRouter } from "next/router";
 
+// Job type definition
+export type Job = {
+  _id: string;
+  title: string;
+  description: string;
+  location: string;
+  type: string;
+  company: string;
+  postedAt: string | Date;
+  requirements?: string[];
+};
+
 const sidebarLinks = [
   { name: "Dashboard", icon: <FiHome />, href: "/admin/dashboard" },
   { name: "Add Job", icon: <FiPlusCircle />, href: "/admin/add-job" },
@@ -15,7 +27,7 @@ const sidebarLinks = [
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const [jobs, setJobs] = useState([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [loadingJobs, setLoadingJobs] = useState(true);
 
   // Simple client-side auth check (replace with real auth in production)
@@ -47,7 +59,7 @@ export default function AdminDashboard() {
             <span className="font-bold text-lg">Admin Panel</span>
           </div>
           <nav className="flex flex-col gap-1 mt-4 px-2">
-            {sidebarLinks.map((link, idx) => (
+            {sidebarLinks.map((link) => (
               <div key={link.name} className="">
                 <a
                   href={link.href}
@@ -124,7 +136,7 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {jobs.map((job: any) => (
+                  {jobs.map((job: Job) => (
                     <tr key={job._id} className="border-b hover:bg-blue-50">
                       <td className="py-2 px-3 font-medium">{job.title}</td>
                       <td className="py-2 px-3">{job.company}</td>

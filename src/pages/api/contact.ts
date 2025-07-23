@@ -10,7 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     await ContactMessage.create({ name, email, message });
     res.status(201).json({ message: 'Message saved' });
-  } catch (err) {
+  } catch {
     res.status(400).json({ error: 'Failed to save message' });
   }
 } 

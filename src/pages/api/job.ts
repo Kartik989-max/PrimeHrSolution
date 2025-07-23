@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       const job = await Job.create({ title, description, location, type, company, requirements });
       return res.status(201).json({ message: 'Job created', job });
-    } catch (err) {
+    } catch {
       return res.status(400).json({ error: 'Failed to create job' });
     }
   } else if (req.method === 'GET') {
