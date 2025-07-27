@@ -58,7 +58,7 @@ const CompaniesSection = () => {
           </SwiperSlide>
         ))}
       </Swiper>
-    </section>
+     </section>
   );
 };
 

@@ -1,40 +1,110 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# Prime HR Solutions
+
+A comprehensive HR management platform built with Next.js, TypeScript, and Tailwind CSS.
+
+## Features
+
+- **User Authentication**: Secure login and registration system
+- **Admin Dashboard**: Complete admin panel for managing jobs and users
+- **Job Management**: Add, edit, and delete job postings
+- **Responsive Design**: Modern, mobile-friendly interface
+- **Professional UI**: Clean and professional design
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js 18+ 
+- npm or yarn
+- MongoDB (local or cloud)
+
+### Installation
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd prime_hr_solution
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+3. Set up environment variables:
+Create a `.env.local` file in the root directory with the following variables:
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+```env
+# Admin Credentials (REQUIRED)
+ADMIN_USERNAME=your_admin_username
+ADMIN_PASSWORD=your_secure_password
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+# Database Configuration
+MONGODB_URI=mongodb://localhost:27017/prime_hr_solutions
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Environment
+NODE_ENV=development
+```
 
-## Learn More
+**Important**: Replace `your_admin_username` and `your_secure_password` with secure credentials. These will be used to access the admin dashboard.
 
-To learn more about Next.js, take a look at the following resources:
+4. Run the development server:
+```bash
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Admin Access
 
-## Deploy on Vercel
+- **Admin Login**: Navigate to `/admin` or `/admin/login`
+- **Admin Dashboard**: `/admin/dashboard`
+- **Job Management**: `/admin/dashboard/job`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Environment Variables
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `ADMIN_USERNAME` | Admin login username | Yes |
+| `ADMIN_PASSWORD` | Admin login password | Yes |
+| `MONGODB_URI` | MongoDB connection string | Yes |
+| `NODE_ENV` | Environment (development/production) | No |
+
+## Project Structure
+
+```
+src/
+├── components/          # React components
+├── pages/              # Next.js pages
+│   ├── api/            # API routes
+│   ├── admin/          # Admin pages
+│   └── auth/           # Authentication pages
+├── models/             # MongoDB models
+├── styles/             # Global styles
+└── utils/              # Utility functions
+```
+
+## Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+
+## Security Notes
+
+- Admin credentials are stored in environment variables
+- Never commit `.env.local` to version control
+- Use strong, unique passwords for admin accounts
+- Regularly update admin credentials
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License.

@@ -8,6 +8,8 @@ const JobSchema = new mongoose.Schema({
   company: { type: String, required: true },
   postedAt: { type: Date, default: Date.now },
   requirements: [{ type: String }],
+  viewCount: { type: Number, default: 0 },
+  applicationCount: { type: Number, default: 0 },
 });
 
 export default mongoose.models.Job || mongoose.model('Job', JobSchema); 
