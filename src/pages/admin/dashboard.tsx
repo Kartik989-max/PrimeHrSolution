@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FiBriefcase, FiUser, FiMail, FiAward } from "react-icons/fi";
+import { FiBriefcase, FiUser, FiMail, FiAward, FiFileText } from "react-icons/fi";
 
 // Job type definition
 export type Job = {
@@ -15,17 +15,31 @@ export type Job = {
 
 export default function AdminDashboard() {
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [applications, setApplications] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch jobs
+  // Fetch jobs and applications
   useEffect(() => {
-    fetch('/api/job')
-      .then(res => res.json())
-      .then(data => {
-        setJobs(data);
-      })
-      .catch(error => {
-        console.error('Error fetching jobs:', error);
-      });
+    const fetchData = async () => {
+      try {
+        const [jobsResponse, applicationsResponse] = await Promise.all([
+          fetch('/api/job'),
+          fetch('/api/admin/applications?limit=1000') // Get all for stats
+        ]);
+
+        const jobsData = await jobsResponse.json();
+        const applicationsData = await applicationsResponse.json();
+
+        setJobs(jobsData);
+        setApplications(applicationsData.applications || []);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   return (
@@ -39,9 +53,9 @@ export default function AdminDashboard() {
         {/* Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-6">
         <DashboardCard icon={<FiBriefcase />} label="Total Jobs" value={jobs.length} />
-        <DashboardCard icon={<FiUser />} label="Active Users" value={0} />
+        <DashboardCard icon={<FiFileText />} label="Applications" value={applications.length} />
+        <DashboardCard icon={<FiUser />} label="Pending Reviews" value={applications.filter(app => app.status === 'pending').length} />
         <DashboardCard icon={<FiMail />} label="Messages" value={0} />
-        <DashboardCard icon={<FiAward />} label="Certifications" value={0} />
         </div>
       
         {/* Summary Cards */}
@@ -51,8 +65,8 @@ export default function AdminDashboard() {
           items={jobs.slice(0, 5).map(job => job.title)}
         />
         <SummaryCard
-          title="Quick Actions"
-          items={["Add New Job", "View Messages", "Manage Users", "Generate Reports"]}
+          title="Recent Applications"
+          items={applications.slice(0, 5).map(app => `${app.firstName} ${app.lastName} - ${app.jobId?.title || 'Unknown Job'}`)}
         />
         </div>
     </>

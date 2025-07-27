@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import dbConnect from '@/utils/dbConnect';
 import JobApplication from '@/models/JobApplication';
 import Job from '@/models/Job';
+import { sendEmail, emailTemplates } from '@/utils/emailConfig';
 import { 
   ApiErrorResponse, 
   ErrorMessages, 
@@ -139,6 +140,45 @@ export default async function handler(
       jobId,
       { $inc: { applicationCount: 1 } }
     );
+
+    // Send email notification to admin
+    try {
+      const adminEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
+      if (adminEmail) {
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+        const viewApplicationUrl = `${baseUrl}/admin/dashboard/applications?jobId=${jobId}`;
+        
+        const emailData = {
+          applicantName: `${firstName} ${lastName}`,
+          applicantEmail: email,
+          applicantPhone: phone,
+          jobTitle: job.title,
+          company: job.company,
+          location: job.location,
+          appliedAt: new Date().toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          }),
+          viewApplicationUrl: viewApplicationUrl
+        };
+
+        const emailTemplate = emailTemplates.newApplicationNotification(emailData);
+        
+        await sendEmail({
+          to: adminEmail,
+          subject: emailTemplate.subject,
+          html: emailTemplate.html
+        });
+
+        console.log('Admin notification email sent successfully');
+      }
+    } catch (emailError) {
+      console.error('Failed to send admin notification email:', emailError);
+      // Don't fail the application submission if email fails
+    }
 
     res.status(201).json({
       message: 'Application submitted successfully',

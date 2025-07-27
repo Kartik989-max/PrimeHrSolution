@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { FiMapPin, FiBriefcase, FiEye, FiCalendar, FiX, FiFileText, FiUpload } from 'react-icons/fi';
+import { FiMapPin, FiBriefcase, FiEye, FiCalendar, FiX } from 'react-icons/fi';
 import LoginModal from '@/components/LoginModal';
 import RegisterModal from '@/components/RegisterModal';
-import { AppError, ErrorMessages, createNetworkError, createUploadError, createValidationError } from '@/types/errors';
+import JobApplicationForm from '@/components/JobApplicationForm';
+import { useAuth } from '@/contexts/AuthContext';
+import { AppError, ErrorMessages, createNetworkError } from '@/types/errors';
 
 interface Job {
   _id: string;
@@ -15,6 +17,8 @@ interface Job {
   requirements?: string[];
   viewCount: number;
   applicationCount: number;
+  hasApplied?: boolean;
+  applicationStatus?: string;
 }
 
 interface User {
@@ -25,17 +29,10 @@ interface User {
   phone?: string;
 }
 
-interface ApplicationForm {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  coverLetter: string;
-  resume: File | null;
-  resumeUrl: string;
-}
+
 
 export default function JobsPage() {
+  const { user, isLoading: authLoading, login } = useAuth();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -45,38 +42,13 @@ export default function JobsPage() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showApplicationModal, setShowApplicationModal] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [uploadingResume, setUploadingResume] = useState(false);
   const [error, setError] = useState<AppError | null>(null);
-
-  // Form states
-  const [applicationForm, setApplicationForm] = useState<ApplicationForm>({
-    firstName: '', lastName: '', email: '', phone: '', coverLetter: '', resume: null, resumeUrl: ''
-  });
 
   useEffect(() => {
     fetchJobs();
-    checkAuthStatus();
-  }, []);
+  }, [user]); // Refetch jobs when user changes (login/logout)
 
-  const checkAuthStatus = () => {
-    if (typeof window !== 'undefined') {
-      const isLoggedIn = localStorage.getItem('isLoggedIn');
-      const userData = localStorage.getItem('user');
-      
-      if (isLoggedIn === 'true' && userData) {
-        try {
-          const user = JSON.parse(userData);
-          setUser(user);
-          setIsAuthenticated(true);
-        } catch (error) {
-          console.error('Error parsing user data:', error);
-          setError(createNetworkError('Failed to load user data'));
-        }
-      }
-    }
-  };
+
 
   const fetchJobs = async () => {
     try {
@@ -85,7 +57,31 @@ export default function JobsPage() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      setJobs(data);
+      
+      // If user is logged in, check application status for each job
+      if (user) {
+        const jobsWithApplicationStatus = await Promise.all(
+          data.map(async (job: Job) => {
+            try {
+              const applicationResponse = await fetch(`/api/job/check-application?jobId=${job._id}&userId=${user.id}`);
+              if (applicationResponse.ok) {
+                const applicationData = await applicationResponse.json();
+                return {
+                  ...job,
+                  hasApplied: applicationData.hasApplied,
+                  applicationStatus: applicationData.application?.status || null
+                };
+              }
+            } catch (error) {
+              console.error(`Error checking application status for job ${job._id}:`, error);
+            }
+            return job;
+          })
+        );
+        setJobs(jobsWithApplicationStatus);
+      } else {
+        setJobs(data);
+      }
     } catch (error) {
       console.error('Error fetching jobs:', error);
       setError(createNetworkError(ErrorMessages.NETWORK_ERROR));
@@ -123,29 +119,17 @@ export default function JobsPage() {
   };
 
   const handleApplyJob = (job: Job) => {
-    if (!isAuthenticated) {
+    if (!user) {
       setShowLoginModal(true);
       return;
     }
     
     setSelectedJob(job);
-    setApplicationForm({
-      firstName: user?.firstName || '',
-      lastName: user?.lastName || '',
-      email: user?.email || '',
-      phone: user?.phone || '',
-      coverLetter: '',
-      resume: null,
-      resumeUrl: ''
-    });
     setShowApplicationModal(true);
   };
 
   const handleLogin = (userData: User) => {
-    localStorage.setItem('isLoggedIn', 'true');
-    localStorage.setItem('user', JSON.stringify(userData));
-    setUser(userData);
-    setIsAuthenticated(true);
+    login(userData); // Call AuthContext login function
     setShowLoginModal(false);
     setError(null);
     
@@ -156,10 +140,7 @@ export default function JobsPage() {
   };
 
   const handleRegister = (userData: User) => {
-    localStorage.setItem('isLoggedIn', 'true');
-    localStorage.setItem('user', JSON.stringify(userData));
-    setUser(userData);
-    setIsAuthenticated(true);
+    login(userData); // Call AuthContext login function (register also logs in)
     setShowRegisterModal(false);
     setError(null);
     
@@ -169,115 +150,21 @@ export default function JobsPage() {
     }
   };
 
-  const uploadResumeToCloudinary = async (file: File): Promise<string> => {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-      const response = await fetch('/api/upload/resume', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || ErrorMessages.RESUME_UPLOAD_FAILED);
-      }
-
-      const data = await response.json();
-      return data.url;
-    } catch (error) {
-      throw new Error(error instanceof Error ? error.message : ErrorMessages.RESUME_UPLOAD_FAILED);
-    }
-  };
-
-  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) { // 5MB limit
-      setError(createUploadError(ErrorMessages.FILE_TOO_LARGE, file.type, file.size));
-      return;
-    }
-
-    if (!file.type.includes('pdf') && !file.type.includes('doc') && !file.type.includes('docx')) {
-      setError(createUploadError(ErrorMessages.INVALID_FILE_TYPE, file.type));
-      return;
-    }
-
-    setUploadingResume(true);
-    setError(null);
-    
-    try {
-      const resumeUrl = await uploadResumeToCloudinary(file);
-      setApplicationForm(prev => ({
-        ...prev,
-        resume: file,
-        resumeUrl
-      }));
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : ErrorMessages.RESUME_UPLOAD_FAILED;
-      setError(createUploadError(errorMessage));
-    } finally {
-      setUploadingResume(false);
-    }
-  };
-
-  const handleSubmitApplication = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!applicationForm.resumeUrl) {
-      setError(createValidationError(ErrorMessages.REQUIRED_FIELDS_MISSING, 'resume'));
-      return;
-    }
-
-    if (!user) {
-      setError(createValidationError('Please login to apply', 'authentication'));
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/job/apply', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          jobId: selectedJob?._id,
-          userId: user.id,
-          firstName: applicationForm.firstName,
-          lastName: applicationForm.lastName,
-          email: applicationForm.email,
-          phone: applicationForm.phone,
-          coverLetter: applicationForm.coverLetter,
-          resumeUrl: applicationForm.resumeUrl,
-          resumePublicId: `resumes/${Date.now()}_${applicationForm.resume?.name}`
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || ErrorMessages.APPLICATION_SUBMISSION_FAILED);
-      }
-      
-      // Update the local state to reflect the new application count
+  const handleApplicationSuccess = () => {
+    // Update the local state to reflect the new application count and mark as applied
+    if (selectedJob) {
       setJobs(prevJobs => 
         prevJobs.map(job => 
-          job._id === selectedJob?._id 
-            ? { ...job, applicationCount: (job.applicationCount || 0) + 1 }
+          job._id === selectedJob._id 
+            ? { 
+                ...job, 
+                applicationCount: (job.applicationCount || 0) + 1,
+                hasApplied: true,
+                applicationStatus: 'pending'
+              }
             : job
         )
       );
-      
-      alert('Application submitted successfully!');
-      setShowApplicationModal(false);
-      setApplicationForm({
-        firstName: '', lastName: '', email: '', phone: '', coverLetter: '', resume: null, resumeUrl: ''
-      });
-      setError(null);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : ErrorMessages.APPLICATION_SUBMISSION_FAILED;
-      setError(createNetworkError(errorMessage));
     }
   };
 
@@ -289,7 +176,7 @@ export default function JobsPage() {
     return matchesSearch && matchesFilter;
   });
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <>
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -435,12 +322,26 @@ export default function JobsPage() {
                     >
                       View Details
                     </button>
-                    <button
-                      onClick={() => handleApplyJob(job)}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      Apply Now
-                    </button>
+                    {job.hasApplied ? (
+                      <button
+                        disabled
+                        className="px-4 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed flex items-center justify-center gap-2"
+                      >
+                        <span className="text-sm">✓ Applied</span>
+                        {job.applicationStatus && (
+                          <span className="text-xs bg-white text-black bg-opacity-20 px-2 py-1 rounded">
+                            {job.applicationStatus.charAt(0).toUpperCase() + job.applicationStatus.slice(1)}
+                          </span>
+                        )}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleApplyJob(job)}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        Apply Now
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -519,15 +420,29 @@ export default function JobsPage() {
                 >
                   Close
                 </button>
-                <button
-                  onClick={() => {
-                    setShowJobModal(false);
-                    handleApplyJob(selectedJob);
-                  }}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  Apply Now
-                </button>
+                {selectedJob.hasApplied ? (
+                  <button
+                    disabled
+                    className="px-6 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed flex items-center gap-2"
+                  >
+                    <span>✓ Applied</span>
+                    {selectedJob.applicationStatus && (
+                      <span className="text-sm bg-white bg-opacity-20 px-2 py-1 rounded">
+                        {selectedJob.applicationStatus.charAt(0).toUpperCase() + selectedJob.applicationStatus.slice(1)}
+                      </span>
+                    )}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setShowJobModal(false);
+                      handleApplyJob(selectedJob);
+                    }}
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  >
+                    Apply Now
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -536,141 +451,12 @@ export default function JobsPage() {
 
       {/* Application Modal */}
       {showApplicationModal && selectedJob && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Apply for {selectedJob.title}</h2>
-                  <p className="text-gray-600">{selectedJob.company}</p>
-                </div>
-                <button
-                  onClick={() => setShowApplicationModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <FiX className="w-6 h-6" />
-                </button>
-              </div>
-
-              <form onSubmit={handleSubmitApplication} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                    <input
-                      type="text"
-                      value={applicationForm.firstName}
-                      onChange={(e) => setApplicationForm({ ...applicationForm, firstName: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                    <input
-                      type="text"
-                      value={applicationForm.lastName}
-                      onChange={(e) => setApplicationForm({ ...applicationForm, lastName: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input
-                      type="email"
-                      value={applicationForm.email}
-                      onChange={(e) => setApplicationForm({ ...applicationForm, email: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                    <input
-                      type="tel"
-                      value={applicationForm.phone}
-                      onChange={(e) => setApplicationForm({ ...applicationForm, phone: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Cover Letter</label>
-                  <textarea
-                    value={applicationForm.coverLetter}
-                    onChange={(e) => setApplicationForm({ ...applicationForm, coverLetter: e.target.value })}
-                    rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Tell us why you're interested in this position..."
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Resume</label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                    {applicationForm.resume ? (
-                      <div className="flex items-center justify-center gap-2">
-                        <FiFileText className="w-5 h-5 text-green-600" />
-                        <span className="text-sm text-gray-600">{applicationForm.resume.name}</span>
-                        <button
-                          type="button"
-                          onClick={() => setApplicationForm({ ...applicationForm, resume: null, resumeUrl: '' })}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <FiX className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <div>
-                        <FiUpload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                        <p className="text-sm text-gray-600 mb-2">
-                          Upload your resume (PDF, DOC, DOCX - max 5MB)
-                        </p>
-                        <input
-                          type="file"
-                          accept=".pdf,.doc,.docx"
-                          onChange={handleResumeUpload}
-                          className="hidden"
-                          id="resume-upload"
-                        />
-                        <label
-                          htmlFor="resume-upload"
-                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer"
-                        >
-                          Choose File
-                        </label>
-                      </div>
-                    )}
-                    {uploadingResume && (
-                      <div className="mt-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mx-auto"></div>
-                        <p className="text-sm text-gray-600">Uploading...</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="flex justify-end gap-4 pt-6 border-t">
-                  <button
-                    type="button"
-                    onClick={() => setShowApplicationModal(false)}
-                    className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={!applicationForm.resumeUrl}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Submit Application
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
+        <JobApplicationForm
+          job={selectedJob}
+          isOpen={showApplicationModal}
+          onClose={() => setShowApplicationModal(false)}
+          onSubmitSuccess={handleApplicationSuccess}
+        />
       )}
 
       {/* Login Modal */}

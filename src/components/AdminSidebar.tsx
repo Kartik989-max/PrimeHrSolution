@@ -12,6 +12,7 @@ const sidebarLinks = [
   { name: "Dashboard", icon: <FiHome />, href: "/admin/dashboard" },
   { name: "Job Management", icon: <FiBriefcase />, href: "/admin/dashboard/job" },
   { name: "Add Job", icon: <FiPlusCircle />, href: "/admin/dashboard/add-job" },
+  { name: "Applications", icon: <FiUser />, href: "/admin/dashboard/applications" },
   { name: "Contact Messages", icon: <FiMail />, href: "/admin/dashboard/messages" },
   { name: "Client Logos", icon: <FiImage />, href: "#" },
   { name: "Settings", icon: <FiSettings />, href: "#" },
