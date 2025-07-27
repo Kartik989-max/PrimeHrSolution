@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { FiMail, FiUser, FiPhone, FiMapPin, FiCalendar, FiEye, FiTrash2 } from 'react-icons/fi';
-import AdminLayout from '@/components/AdminLayout';
 
 interface ContactMessage {
   _id: string;

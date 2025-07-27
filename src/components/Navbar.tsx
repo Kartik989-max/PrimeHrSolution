@@ -8,9 +8,9 @@ const navLinks = [
   { name: "Home", href: "/" },
   { name: "About Us", href: "/about" },
   { name: "Services", href: "#services" },
-  { name: "Job Seekers", href: "#jobseekers" },
+  // { name: "Job Seekers", href: "#jobseekers" },
   { name: "Contact Us", href: "/contact" },
-  { name: "Jobs Opening", href: "#jobs" },
+  { name: "Jobs Opening", href: "/jobs" },
 ];
 
 export default function Navbar() {

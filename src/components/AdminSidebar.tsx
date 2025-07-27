@@ -1,9 +1,10 @@
 import React from 'react';
 import { useRouter } from 'next/router';
-import { FiHome, FiFileText, FiImage, FiMail, FiSettings, FiUser, FiPlusCircle, FiBriefcase, FiLogOut } from 'react-icons/fi';
+import { FiHome, FiImage, FiMail, FiSettings, FiUser, FiPlusCircle, FiBriefcase, FiLogOut } from 'react-icons/fi';
+import { AdminData } from '@/types/admin';
 
 interface AdminSidebarProps {
-  adminData?: any;
+  adminData?: AdminData | null;
   onLogout: () => void;
 }
 
@@ -23,8 +24,8 @@ export default function AdminSidebar({ adminData, onLogout }: AdminSidebarProps)
     <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r shadow-sm flex flex-col z-10">
       <div className="flex-1 flex flex-col">
         <div className="flex items-center gap-2 px-6 py-6 border-b">
-          <span className="text-2xl text-blue-700"><FiHome /></span>
-          <span className="font-bold text-black text-lg">Admin Panel</span>
+          <span className="text-2xl text-orange-500"><FiHome /></span>
+          <span className="font-bold text-lg">Admin Panel</span>
         </div>
         <nav className="flex-1 flex flex-col gap-1 mt-4 px-2 overflow-y-auto">
           {sidebarLinks.map((link) => (

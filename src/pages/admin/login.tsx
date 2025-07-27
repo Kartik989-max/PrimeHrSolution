@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { FaUser, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import { AdminData } from "@/types/admin";
 
 export default function AdminLogin() {
   const [username, setUsername] = useState("");
@@ -30,9 +31,10 @@ export default function AdminLogin() {
         throw new Error(data.error || 'Login failed');
       }
 
-      // Store admin authentication
+      // Store admin authentication with proper typing
+      const adminData: AdminData = data.admin;
       localStorage.setItem('isAdmin', 'true');
-      localStorage.setItem('adminData', JSON.stringify(data.admin));
+      localStorage.setItem('adminData', JSON.stringify(adminData));
 
       // Redirect to admin dashboard
       router.push("/admin/dashboard");
@@ -98,13 +100,13 @@ export default function AdminLogin() {
               />
               <button
                 type="button"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
               >
                 {showPassword ? (
-                  <FaEyeSlash className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                  <FaEyeSlash className="h-5 w-5 text-gray-400" />
                 ) : (
-                  <FaEye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                  <FaEye className="h-5 w-5 text-gray-400" />
                 )}
               </button>
             </div>
@@ -118,17 +120,17 @@ export default function AdminLogin() {
             {isLoading ? (
               <div className="flex items-center">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Signing in...
+                Logging in...
               </div>
             ) : (
-              'Sign in as Admin'
+              'Login to Admin Panel'
             )}
           </button>
         </form>
 
         <div className="mt-6 text-center">
-          <p className="text-xs text-gray-500">
-            Contact your system administrator for login credentials
+          <p className="text-sm text-gray-600">
+            Secure admin access only
           </p>
         </div>
       </div>

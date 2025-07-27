@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { FaInstagram, FaLinkedin, FaYoutube, FaMapMarkerAlt, FaPhoneAlt } from "react-icons/fa";
 
 export default function Footer() {
@@ -14,10 +15,10 @@ export default function Footer() {
         <div className="flex flex-col items-center md:items-start w-full md:w-1/3 mb-6 md:mb-0">
           <span className="font-bold text-base mb-2 text-gray-900">Quick Links</span>
           <ul className="flex text-gray-700 flex-col gap-1 text-body">
-            <li><a href="/about" className="hover:text-blue-700 transition-colors">About Us</a></li>
-            <li><a href="/jobs" className="hover:text-blue-700 transition-colors">Jobs</a></li>
-            <li><a href="/contact" className="hover:text-blue-700 transition-colors">Contact</a></li>
-            <li><a href="/privacy" className="hover:text-blue-700 transition-colors">Privacy Policy</a></li>
+            <li><Link href="/about" className="hover:text-blue-700 transition-colors">About Us</Link></li>
+            <li><Link href="/jobs" className="hover:text-blue-700 transition-colors">Jobs</Link></li>
+            <li><Link href="/contact" className="hover:text-blue-700 transition-colors">Contact</Link></li>
+            <li><Link href="/privacy" className="hover:text-blue-700 transition-colors">Privacy Policy</Link></li>
           </ul>
         </div>
         {/* Contact & Social */}

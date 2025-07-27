@@ -107,7 +107,7 @@ export default function Contact() {
         <div className="text-center mb-12">
           <h1 className="text-heading mb-4">Contact Us</h1>
           <p className="text-body max-w-2xl mx-auto">
-            Get in touch with Prime HR Solutions. We're here to help you find the perfect talent or the right opportunity.
+            Get in touch with Prime HR Solutions. We&apos;re here to help you find the perfect talent or the right opportunity.
           </p>
         </div>
 
@@ -136,7 +136,7 @@ export default function Contact() {
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
                     <p className="text-body">info@primehrsolution.com</p>
-                    <p className="text-sm text-gray-500">We'll respond within 24 hours</p>
+                    <p className="text-sm text-gray-500">We&apos;ll respond within 24 hours</p>
                   </div>
                 </div>
 

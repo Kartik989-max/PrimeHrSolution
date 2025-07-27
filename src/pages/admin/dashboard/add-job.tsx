@@ -43,7 +43,7 @@ export default function AddJob() {
     } else {
         setStatus({ type: 'error', message: data.error || 'Failed to add job.' });
       }
-    } catch (error) {
+    } catch  {
       setStatus({ type: 'error', message: 'An error occurred. Please try again.' });
     } finally {
       setIsSubmitting(false);
@@ -210,7 +210,7 @@ export default function AddJob() {
                     required
                     rows={6}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
-                    placeholder="Provide a detailed description of the job role, responsibilities, and what you're looking for in a candidate..."
+                    placeholder="Provide a detailed description of the job role, responsibilities, and what you&apos;re looking for in a candidate..."
                   />
                 </div>
               </div>

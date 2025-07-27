@@ -49,7 +49,7 @@ export default function JobCategories() {
       <h2 className="text-heading mb-2 text-center">Job Categories We Provide</h2>
       <div className="w-16 h-1 bg-blue-500-custom rounded-full mb-8 mx-auto" />
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 max-w-6xl w-full">
-        {categories.map((cat, idx) => (
+        {categories.map((cat) => (
           <div
             key={cat.title}
             className={`group flex flex-col items-center justify-center p-7 rounded-2xl shadow-md border border-blue-100 transition-transform duration-300 hover:-translate-y-2 hover:shadow-xl ${cat.color}`}

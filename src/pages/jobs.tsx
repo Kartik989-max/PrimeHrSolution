@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { FiMapPin, FiBriefcase, FiEye, FiCalendar, FiX, FiUser, FiMail, FiPhone, FiFileText, FiUpload, FiDownload } from 'react-icons/fi';
+import { FiMapPin, FiBriefcase, FiEye, FiCalendar, FiX, FiFileText, FiUpload } from 'react-icons/fi';
+import LoginModal from '@/components/LoginModal';
+import RegisterModal from '@/components/RegisterModal';
+import { AppError, ErrorMessages, createNetworkError, createUploadError, createValidationError } from '@/types/errors';
 
 interface Job {
   _id: string;
@@ -45,12 +48,9 @@ export default function JobsPage() {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [uploadingResume, setUploadingResume] = useState(false);
+  const [error, setError] = useState<AppError | null>(null);
 
   // Form states
-  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
-  const [registerForm, setRegisterForm] = useState({
-    firstName: '', lastName: '', email: '', phone: '', password: '', confirmPassword: ''
-  });
   const [applicationForm, setApplicationForm] = useState<ApplicationForm>({
     firstName: '', lastName: '', email: '', phone: '', coverLetter: '', resume: null, resumeUrl: ''
   });
@@ -72,6 +72,7 @@ export default function JobsPage() {
           setIsAuthenticated(true);
         } catch (error) {
           console.error('Error parsing user data:', error);
+          setError(createNetworkError('Failed to load user data'));
         }
       }
     }
@@ -80,10 +81,14 @@ export default function JobsPage() {
   const fetchJobs = async () => {
     try {
       const response = await fetch('/api/job');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
       setJobs(data);
     } catch (error) {
       console.error('Error fetching jobs:', error);
+      setError(createNetworkError(ErrorMessages.NETWORK_ERROR));
     } finally {
       setLoading(false);
     }
@@ -95,9 +100,13 @@ export default function JobsPage() {
     
     try {
       // Increment view count
-      await fetch(`/api/job/${job._id}/view`, {
+      const response = await fetch(`/api/job/${job._id}/view`, {
         method: 'POST',
       });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to update view count: ${response.status}`);
+      }
       
       // Update the local state to reflect the new view count
       setJobs(prevJobs => 
@@ -109,6 +118,7 @@ export default function JobsPage() {
       );
     } catch (error) {
       console.error('Error updating view count:', error);
+      // Don't show error to user for view count updates
     }
   };
 
@@ -131,73 +141,31 @@ export default function JobsPage() {
     setShowApplicationModal(true);
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(loginForm),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('user', JSON.stringify(data.user));
-        setUser(data.user);
-        setIsAuthenticated(true);
-        setShowLoginModal(false);
-        setLoginForm({ email: '', password: '' });
-        
-        // If there's a selected job, open application form
-        if (selectedJob) {
-          handleApplyJob(selectedJob);
-        }
-      } else {
-        alert(data.error || 'Login failed');
-      }
-    } catch (error) {
-      alert('Login failed. Please try again.');
+  const handleLogin = (userData: User) => {
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+    setIsAuthenticated(true);
+    setShowLoginModal(false);
+    setError(null);
+    
+    // If there's a selected job, open application form
+    if (selectedJob) {
+      handleApplyJob(selectedJob);
     }
   };
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleRegister = (userData: User) => {
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+    setIsAuthenticated(true);
+    setShowRegisterModal(false);
+    setError(null);
     
-    if (registerForm.password !== registerForm.confirmPassword) {
-      alert('Passwords do not match');
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(registerForm),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('user', JSON.stringify(data.user));
-        setUser(data.user);
-        setIsAuthenticated(true);
-        setShowRegisterModal(false);
-        setRegisterForm({
-          firstName: '', lastName: '', email: '', phone: '', password: '', confirmPassword: ''
-        });
-        
-        // If there's a selected job, open application form
-        if (selectedJob) {
-          handleApplyJob(selectedJob);
-        }
-      } else {
-        alert(data.error || 'Registration failed');
-      }
-    } catch (error) {
-      alert('Registration failed. Please try again.');
+    // If there's a selected job, open application form
+    if (selectedJob) {
+      handleApplyJob(selectedJob);
     }
   };
 
@@ -211,15 +179,15 @@ export default function JobsPage() {
         body: formData,
       });
 
-      const data = await response.json();
-      
       if (!response.ok) {
-        throw new Error(data.error || 'Upload failed');
+        const errorData = await response.json();
+        throw new Error(errorData.error || ErrorMessages.RESUME_UPLOAD_FAILED);
       }
-      
+
+      const data = await response.json();
       return data.url;
     } catch (error) {
-      throw new Error('Failed to upload resume');
+      throw new Error(error instanceof Error ? error.message : ErrorMessages.RESUME_UPLOAD_FAILED);
     }
   };
 
@@ -228,16 +196,18 @@ export default function JobsPage() {
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) { // 5MB limit
-      alert('File size must be less than 5MB');
+      setError(createUploadError(ErrorMessages.FILE_TOO_LARGE, file.type, file.size));
       return;
     }
 
     if (!file.type.includes('pdf') && !file.type.includes('doc') && !file.type.includes('docx')) {
-      alert('Please upload a PDF, DOC, or DOCX file');
+      setError(createUploadError(ErrorMessages.INVALID_FILE_TYPE, file.type));
       return;
     }
 
     setUploadingResume(true);
+    setError(null);
+    
     try {
       const resumeUrl = await uploadResumeToCloudinary(file);
       setApplicationForm(prev => ({
@@ -246,7 +216,8 @@ export default function JobsPage() {
         resumeUrl
       }));
     } catch (error) {
-      alert('Failed to upload resume. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : ErrorMessages.RESUME_UPLOAD_FAILED;
+      setError(createUploadError(errorMessage));
     } finally {
       setUploadingResume(false);
     }
@@ -256,12 +227,12 @@ export default function JobsPage() {
     e.preventDefault();
     
     if (!applicationForm.resumeUrl) {
-      alert('Please upload your resume');
+      setError(createValidationError(ErrorMessages.REQUIRED_FIELDS_MISSING, 'resume'));
       return;
     }
 
     if (!user) {
-      alert('Please login to apply');
+      setError(createValidationError('Please login to apply', 'authentication'));
       return;
     }
 
@@ -284,10 +255,9 @@ export default function JobsPage() {
         }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to submit application');
+        const errorData = await response.json();
+        throw new Error(errorData.error || ErrorMessages.APPLICATION_SUBMISSION_FAILED);
       }
       
       // Update the local state to reflect the new application count
@@ -304,8 +274,10 @@ export default function JobsPage() {
       setApplicationForm({
         firstName: '', lastName: '', email: '', phone: '', coverLetter: '', resume: null, resumeUrl: ''
       });
+      setError(null);
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Failed to submit application. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : ErrorMessages.APPLICATION_SUBMISSION_FAILED;
+      setError(createNetworkError(errorMessage));
     }
   };
 
@@ -380,6 +352,21 @@ export default function JobsPage() {
               Browse through our latest job openings
             </p>
           </div>
+
+          {/* Error Display */}
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-red-600">{error.message}</p>
+                <button
+                  onClick={() => setError(null)}
+                  className="text-red-400 hover:text-red-600"
+                >
+                  <FiX className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="grid gap-6">
             {filteredJobs.map((job) => (
@@ -547,173 +534,6 @@ export default function JobsPage() {
         </div>
       )}
 
-      {/* Login Modal */}
-      {showLoginModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Login</h2>
-                <button
-                  onClick={() => setShowLoginModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <FiX className="w-6 h-6" />
-                </button>
-              </div>
-
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={loginForm.email}
-                    onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                  <input
-                    type="password"
-                    value={loginForm.password}
-                    onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  Login
-                </button>
-              </form>
-
-              <div className="mt-4 text-center">
-                <p className="text-sm text-gray-600">
-                  Don't have an account?{' '}
-                  <button
-                    onClick={() => {
-                      setShowLoginModal(false);
-                      setShowRegisterModal(true);
-                    }}
-                    className="text-blue-600 hover:text-blue-700"
-                  >
-                    Register here
-                  </button>
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Register Modal */}
-      {showRegisterModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Register</h2>
-                <button
-                  onClick={() => setShowRegisterModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <FiX className="w-6 h-6" />
-                </button>
-              </div>
-
-              <form onSubmit={handleRegister} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                    <input
-                      type="text"
-                      value={registerForm.firstName}
-                      onChange={(e) => setRegisterForm({ ...registerForm, firstName: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                    <input
-                      type="text"
-                      value={registerForm.lastName}
-                      onChange={(e) => setRegisterForm({ ...registerForm, lastName: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={registerForm.email}
-                    onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                  <input
-                    type="tel"
-                    value={registerForm.phone}
-                    onChange={(e) => setRegisterForm({ ...registerForm, phone: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                  <input
-                    type="password"
-                    value={registerForm.password}
-                    onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-                  <input
-                    type="password"
-                    value={registerForm.confirmPassword}
-                    onChange={(e) => setRegisterForm({ ...registerForm, confirmPassword: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  Register
-                </button>
-              </form>
-
-              <div className="mt-4 text-center">
-                <p className="text-sm text-gray-600">
-                  Already have an account?{' '}
-                  <button
-                    onClick={() => {
-                      setShowRegisterModal(false);
-                      setShowLoginModal(true);
-                    }}
-                    className="text-blue-600 hover:text-blue-700"
-                  >
-                    Login here
-                  </button>
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Application Modal */}
       {showApplicationModal && selectedJob && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -852,6 +672,28 @@ export default function JobsPage() {
           </div>
         </div>
       )}
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onLogin={handleLogin}
+        onSwitchToRegister={() => {
+          setShowLoginModal(false);
+          setShowRegisterModal(true);
+        }}
+      />
+
+      {/* Register Modal */}
+      <RegisterModal
+        isOpen={showRegisterModal}
+        onClose={() => setShowRegisterModal(false)}
+        onRegister={handleRegister}
+        onSwitchToLogin={() => {
+          setShowRegisterModal(false);
+          setShowLoginModal(true);
+        }}
+      />
     </>
   );
 } 

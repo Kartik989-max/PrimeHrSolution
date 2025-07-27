@@ -7,28 +7,28 @@ const stats = [
   { label: "Industries Covered", value: 24, suffix: "" },
 ];
 
-function useCountUp(target: number, duration = 1200, start: boolean = false) {
-  const [count, setCount] = useState(0);
-  const raf = useRef<number | undefined>(undefined);
+// function useCountUp(target: number, duration = 1200, start: boolean = false) {
+//   const [count, setCount] = useState(0);
+//   const raf = useRef<number | undefined>(undefined);
 
-  useEffect(() => {
-    if (!start) {
-      setCount(0);
-      return;
-    }
-    let startTime: number | null = null;
-    function animate(ts: number) {
-      if (!startTime) startTime = ts;
-      const progress = Math.min((ts - startTime) / duration, 1);
-      setCount(Math.floor(progress * target));
-      if (progress < 1) raf.current = requestAnimationFrame(animate);
-      else setCount(target);
-    }
-    raf.current = requestAnimationFrame(animate);
-    return () => { if (raf.current !== undefined) cancelAnimationFrame(raf.current); };
-  }, [target, duration, start]);
-  return count;
-}
+//   useEffect(() => {
+//     if (!start) {
+//       setCount(0);
+//       return;
+//     }
+//     let startTime: number | null = null;
+//     function animate(ts: number) {
+//       if (!startTime) startTime = ts;
+//       const progress = Math.min((ts - startTime) / duration, 1);
+//       setCount(Math.floor(progress * target));
+//       if (progress < 1) raf.current = requestAnimationFrame(animate);
+//       else setCount(target);
+//     }
+//     raf.current = requestAnimationFrame(animate);
+//     return () => { if (raf.current !== undefined) cancelAnimationFrame(raf.current); };
+//   }, [target, duration, start]);
+//   return count;
+// }
 
 export default function StatsSection() {
   const sectionRef = useRef<HTMLDivElement>(null);

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function About() {
   return (
@@ -47,8 +48,8 @@ export default function About() {
       <section className="w-full max-w-4xl bg-blue-50 rounded-xl shadow p-8 flex flex-col items-center">
         <h2 className="text-subheading mb-2 text-blue-700">Ready to Find Your Next Opportunity?</h2>
         <p className="text-body mb-4 text-center">
-          Whether you’re a job seeker or an employer, Prime HR Solutions is here to help you succeed. <br />
-          <a href="/contact" className="text-blue-700 font-semibold underline hover:text-blue-900">Contact us</a> today or <a href="/jobs" className="text-blue-700 font-semibold underline hover:text-blue-900">explore our job openings</a>.
+          Whether you&apos;re a job seeker or an employer, Prime HR Solutions is here to help you succeed. <br />
+          <Link href="/contact" className="text-blue-700 font-semibold underline hover:text-blue-900">Contact us</Link> today or <Link href="/jobs" className="text-blue-700 font-semibold underline hover:text-blue-900">explore our job openings</Link>.
         </p>
       </section>
     </div>

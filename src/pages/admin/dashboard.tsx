@@ -15,7 +15,6 @@ export type Job = {
 
 export default function AdminDashboard() {
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [loadingJobs, setLoadingJobs] = useState(true);
 
   // Fetch jobs
   useEffect(() => {
@@ -23,9 +22,10 @@ export default function AdminDashboard() {
       .then(res => res.json())
       .then(data => {
         setJobs(data);
-        setLoadingJobs(false);
       })
-      .catch(() => setLoadingJobs(false));
+      .catch(error => {
+        console.error('Error fetching jobs:', error);
+      });
   }, []);
 
   return (
@@ -33,7 +33,7 @@ export default function AdminDashboard() {
       {/* Page Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-500 mt-2">Welcome, Admin. Here's an overview of your platform.</p>
+        <p className="text-gray-500 mt-2">Welcome, Admin. Here&apos;s an overview of your platform.</p>
           </div>
 
         {/* Cards */}

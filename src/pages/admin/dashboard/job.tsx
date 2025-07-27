@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
+// import { useRouter } from 'next/router';
 import { FiPlus, FiEdit, FiTrash2, FiEye, FiSearch, FiFilter, FiX, FiUsers, FiEye as FiViewIcon } from 'react-icons/fi';
 
 interface Job {
@@ -25,7 +25,7 @@ interface JobFormData {
 }
 
 export default function JobManagement() {
-  const router = useRouter();
+  // const router = useRouter();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);

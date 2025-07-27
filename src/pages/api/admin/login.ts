@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { AdminData } from '@/types/admin';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -25,13 +26,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Check admin credentials
     if (username === adminUsername && password === adminPassword) {
+      // Create admin data object with proper typing
+      const adminData: AdminData = {
+        username: adminUsername,
+        role: 'admin',
+        lastLogin: new Date(),
+        permissions: ['manage_jobs', 'manage_messages', 'view_analytics']
+      };
+
       // Return success response
       res.status(200).json({ 
         message: 'Admin login successful',
-        admin: {
-          username: adminUsername,
-          role: 'admin'
-        }
+        admin: adminData
       });
     } else {
       // Invalid credentials
