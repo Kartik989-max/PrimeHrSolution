@@ -83,25 +83,25 @@ export default function StatsSection() {
   return (
     <section
       ref={sectionRef}
-      className={`w-full flex flex-col items-center py-12  transition-opacity duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+      className={`w-full flex flex-col items-center py-8 sm:py-12 transition-opacity duration-700 px-4 sm:px-0 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
       style={{ transitionProperty: 'opacity, transform' }}
     >
-      <h2 className="text-heading mb-8">Our Impact</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 w-full max-w-4xl">
+      <h2 className="text-xl sm:text-2xl md:text-heading mb-6 sm:mb-8 text-center">Our Impact</h2>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 w-full max-w-4xl">
         {stats.map((stat, i) => {
           // Format with commas for large numbers
           const display = stat.value >= 1000 ? counts[i].toLocaleString() : counts[i];
           return (
             <div
               key={stat.label}
-              className={`flex flex-col items-center bg-white rounded-xl shadow-lg p-8 border border-blue-100 hover:shadow-xl transition-shadow duration-300 transform ${visible ? 'opacity-100 translate-y-0' : 'opacity-0'}`}
+              className={`flex flex-col items-center bg-white rounded-xl shadow-lg p-4 sm:p-6 md:p-8 border border-blue-100 hover:shadow-xl transition-shadow duration-300 transform ${visible ? 'opacity-100 translate-y-0' : 'opacity-0'}`}
               style={{ transitionDelay: `${i * 120}ms`, transitionProperty: 'opacity, transform' }}
             >
-              <span className="text-4xl font-extrabold text-blue-700 mb-2">
+              <span className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-blue-700 mb-2">
                 {display}
                 {stat.suffix}
               </span>
-              <span className="text-subheading text-center">
+              <span className="text-xs sm:text-sm md:text-subheading text-center">
                 {stat.label}
               </span>
             </div>

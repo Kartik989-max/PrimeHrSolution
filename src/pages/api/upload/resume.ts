@@ -50,7 +50,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await runMiddleware(req, res, upload.single('file'));
 
     const file = (req as NextApiRequestWithFile).file;
-
+    
     if (!file) {
       return res.status(400).json({ error: 'No file provided' });
     }
@@ -82,12 +82,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const uniqueFileName = `${sanitizedUsername}_${timestamp}_${fileNameWithoutExt}`;
       
       // Fallback to mock response if Cloudinary is not configured
-      const mockUploadResponse = {
+    const mockUploadResponse = {
         secure_url: `https://res.cloudinary.com/your-cloud-name/raw/upload/v1/resumes/${uniqueFileName}.${fileExtension}`,
         public_id: uniqueFileName,
         format: fileExtension,
-        resource_type: 'raw'
-      };
+      resource_type: 'raw'
+    };
 
       return res.status(200).json({
         message: 'Resume uploaded successfully (mock)',
@@ -170,7 +170,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     res.status(500).json({ error: 'Failed to upload resume' });
   }
-}
+} 
 
 // Disable body parsing for file uploads
 export const config = {

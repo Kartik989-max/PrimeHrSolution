@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 // import { useRouter } from 'next/router';
-import { FiPlus, FiEdit, FiTrash2, FiEye, FiSearch, FiFilter, FiX, FiUsers, FiEye as FiViewIcon, FiFileText, FiDownload, FiCalendar, FiUser, FiCheck, FiClock, FiStar, FiAlertCircle } from 'react-icons/fi';
+import { FiPlus, FiEdit, FiTrash2, FiEye, FiSearch, FiFilter, FiX, FiUsers, FiEye as FiViewIcon, FiFileText, FiDownload, FiCalendar, FiUser, FiCheck, FiClock, FiStar, FiAlertCircle, FiFile } from 'react-icons/fi';
+import * as XLSX from 'xlsx';
 
 interface Job {
   _id: string;
@@ -57,6 +58,7 @@ export default function JobManagement() {
   const [applicationStatusFilter, setApplicationStatusFilter] = useState('all');
   const [showApplicationDetailModal, setShowApplicationDetailModal] = useState(false);
   const [selectedApplicationForDetail, setSelectedApplicationForDetail] = useState<any>(null);
+  const [exportingExcel, setExportingExcel] = useState(false);
 
   // Fetch jobs
   useEffect(() => {
@@ -297,6 +299,61 @@ export default function JobManagement() {
     });
   };
 
+  const exportApplicationsToExcel = async () => {
+    setExportingExcel(true);
+    try {
+      // Prepare data for export
+      const exportData = filteredApplications.map(application => ({
+        'Applicant Name': `${application.firstName} ${application.lastName}`,
+        'Email': application.email,
+        'Phone': application.phone,
+        'Job Title': application.jobId?.title || 'Unknown Job',
+        'Company': application.jobId?.company || 'Unknown Company',
+        'Location': application.jobId?.location || 'Unknown Location',
+        'Applied Date': formatDate(application.appliedAt),
+        'Status': application.status.charAt(0).toUpperCase() + application.status.slice(1),
+        'Cover Letter': application.coverLetter || 'N/A',
+        'Resume Link': `${window.location.origin}/api/resume/${application._id}`,
+        'Notes': application.notes || 'N/A'
+      }));
+
+      // Create workbook and worksheet
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+      // Set column widths
+      const columnWidths = [
+        { wch: 20 }, // Applicant Name
+        { wch: 25 }, // Email
+        { wch: 15 }, // Phone
+        { wch: 25 }, // Job Title
+        { wch: 20 }, // Company
+        { wch: 20 }, // Location
+        { wch: 15 }, // Applied Date
+        { wch: 12 }, // Status
+        { wch: 50 }, // Cover Letter
+        { wch: 40 }, // Resume Link
+        { wch: 30 }  // Notes
+      ];
+      worksheet['!cols'] = columnWidths;
+
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Applications');
+
+      // Generate filename
+      const jobTitle = selectedJobForApplications ? selectedJobForApplications.title.replace(/[^a-zA-Z0-9]/g, '_') : 'All_Jobs';
+      const filename = `Applications_${jobTitle}_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+      // Save the file
+      XLSX.writeFile(workbook, filename);
+    } catch (error) {
+      console.error('Error exporting to Excel:', error);
+      alert('Error exporting to Excel. Please try again.');
+    } finally {
+      setExportingExcel(false);
+    }
+  };
+
   // Filter applications based on selected filters
   const filteredApplications = applications.filter(application => {
     const matchesJob = applicationJobFilter === 'all' || application.jobId?._id === applicationJobFilter;
@@ -340,16 +397,16 @@ export default function JobManagement() {
             <FiFileText className="text-lg" />
             View All Applications
           </button> */}
-          <button
-            onClick={() => {
-              resetForm();
-              setShowForm(true);
-            }}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors"
-          >
-            <FiPlus className="text-lg" />
-            Add New Job
-          </button>
+        <button
+          onClick={() => {
+            resetForm();
+            setShowForm(true);
+          }}
+          className="bg-blue-600 text-white px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors"
+        >
+          <FiPlus className="text-lg" />
+          Add New Job
+        </button>
         </div>
       </div>
 
@@ -729,12 +786,25 @@ export default function JobManagement() {
                     }
                   </p>
                 </div>
-                <button
-                  onClick={() => setShowApplicationsModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <FiX className="w-6 h-6" />
-                </button>
+                <div className="flex items-center gap-3">
+                  {filteredApplications.length > 0 && (
+                    <button
+                      onClick={exportApplicationsToExcel}
+                      disabled={exportingExcel}
+                      className="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-green-700 disabled:opacity-50 transition-colors"
+                      title="Export to Excel"
+                    >
+                      <FiFile className="w-4 h-4" />
+                      {exportingExcel ? 'Exporting...' : 'Export Excel'}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowApplicationsModal(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <FiX className="w-6 h-6" />
+                  </button>
+                </div>
               </div>
 
               {applicationsLoading ? (
@@ -895,7 +965,7 @@ export default function JobManagement() {
 
       {/* Status Update Modal */}
       {showStatusModal && selectedApplication && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed text-black inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-md w-full">
             <div className="p-6">
               <div className="flex justify-between items-start mb-6">

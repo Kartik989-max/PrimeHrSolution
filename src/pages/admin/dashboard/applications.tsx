@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { FiSearch, FiFilter, FiEye, FiDownload, FiCalendar, FiUser, FiBriefcase, FiMail, FiPhone, FiFileText, FiCheck, FiX, FiClock, FiStar, FiAlertCircle } from 'react-icons/fi';
+import { FiSearch, FiFilter, FiEye, FiDownload, FiCalendar, FiUser, FiBriefcase, FiMail, FiPhone, FiFileText, FiCheck, FiX, FiClock, FiStar, FiAlertCircle, FiFile } from 'react-icons/fi';
+import * as XLSX from 'xlsx';
 
 interface JobApplication {
   _id: string;
@@ -60,6 +61,7 @@ export default function ApplicationsPage() {
   // Status update states
   const [newStatus, setNewStatus] = useState('');
   const [notes, setNotes] = useState('');
+  const [exportingExcel, setExportingExcel] = useState(false);
 
   useEffect(() => {
     // Check if there's a jobId in the URL query parameters
@@ -172,6 +174,80 @@ export default function ApplicationsPage() {
     });
   };
 
+  const exportApplicationsToExcel = async () => {
+    setExportingExcel(true);
+    try {
+      // Fetch all applications for export (not just current page)
+      const params = new URLSearchParams({
+        limit: '1000', // Get all applications
+        ...(statusFilter !== 'all' && { status: statusFilter }),
+        ...(jobFilter !== 'all' && { jobId: jobFilter }),
+        ...(searchTerm && { search: searchTerm })
+      });
+
+      const response = await fetch(`/api/admin/applications?${params}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch applications for export');
+      }
+
+      const data = await response.json();
+      const allApplications = data.applications;
+
+      // Prepare data for export
+      const exportData = allApplications.map((application: JobApplication) => ({
+        'Applicant Name': `${application.firstName} ${application.lastName}`,
+        'Email': application.email,
+        'Phone': application.phone,
+        'Job Title': application.jobId?.title || 'Unknown Job',
+        'Company': application.jobId?.company || 'Unknown Company',
+        'Location': application.jobId?.location || 'Unknown Location',
+        'Job Type': application.jobId?.type || 'Unknown Type',
+        'Applied Date': formatDate(application.appliedAt),
+        'Status': application.status.charAt(0).toUpperCase() + application.status.slice(1),
+        'Cover Letter': application.coverLetter || 'N/A',
+        'Resume Link': `${window.location.origin}/api/resume/${application._id}`,
+        'Notes': application.notes || 'N/A'
+      }));
+
+      // Create workbook and worksheet
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+      // Set column widths
+      const columnWidths = [
+        { wch: 20 }, // Applicant Name
+        { wch: 25 }, // Email
+        { wch: 15 }, // Phone
+        { wch: 25 }, // Job Title
+        { wch: 20 }, // Company
+        { wch: 20 }, // Location
+        { wch: 15 }, // Job Type
+        { wch: 15 }, // Applied Date
+        { wch: 12 }, // Status
+        { wch: 50 }, // Cover Letter
+        { wch: 40 }, // Resume Link
+        { wch: 30 }  // Notes
+      ];
+      worksheet['!cols'] = columnWidths;
+
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Applications');
+
+      // Generate filename
+      const jobFilterText = jobFilter !== 'all' ? filters?.jobs.find(j => j._id === jobFilter)?.title.replace(/[^a-zA-Z0-9]/g, '_') : 'All_Jobs';
+      const statusFilterText = statusFilter !== 'all' ? statusFilter : 'All_Status';
+      const filename = `Applications_${jobFilterText}_${statusFilterText}_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+      // Save the file
+      XLSX.writeFile(workbook, filename);
+    } catch (error) {
+      console.error('Error exporting to Excel:', error);
+      alert('Error exporting to Excel. Please try again.');
+    } finally {
+      setExportingExcel(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -183,9 +259,22 @@ export default function ApplicationsPage() {
   return (
     <div className="p-6">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Job Applications</h1>
-        <p className="text-gray-600 mt-2">Manage and review all job applications</p>
+      <div className="flex justify-between items-start mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Job Applications</h1>
+          <p className="text-gray-600 mt-2">Manage and review all job applications</p>
+        </div>
+        {applications.length > 0 && (
+          <button
+            onClick={exportApplicationsToExcel}
+            disabled={exportingExcel}
+            className="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-green-700 disabled:opacity-50 transition-colors"
+            title="Export to Excel"
+          >
+            <FiFile className="w-4 h-4" />
+            {exportingExcel ? 'Exporting...' : 'Export Excel'}
+          </button>
+        )}
       </div>
 
       {/* Stats Cards */}
@@ -531,7 +620,7 @@ export default function ApplicationsPage() {
 
       {/* Status Update Modal */}
       {showStatusModal && selectedApplication && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 text-black bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-md w-full">
             <div className="p-6">
               <div className="flex justify-between items-start mb-6">

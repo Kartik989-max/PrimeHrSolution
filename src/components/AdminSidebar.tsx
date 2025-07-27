@@ -22,10 +22,10 @@ export default function AdminSidebar({ adminData, onLogout }: AdminSidebarProps)
   const router = useRouter();
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r shadow-sm flex flex-col z-10">
+    <aside className="fixed text-black left-0 top-0 h-screen w-64 bg-white border-r shadow-sm flex flex-col z-10">
       <div className="flex-1 flex flex-col">
         <div className="flex items-center gap-2 px-6 py-6 border-b">
-          <span className="text-2xl text-orange-500"><FiHome /></span>
+          <span className="text-2xl text-blue-500"><FiHome /></span>
           <span className="font-bold text-lg">Admin Panel</span>
         </div>
         <nav className="flex-1 flex flex-col gap-1 mt-4 px-2 overflow-y-auto">

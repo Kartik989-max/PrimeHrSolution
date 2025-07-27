@@ -29,30 +29,33 @@ const companies = [
 
 const CompaniesSection = () => {
   return (
-    <section className="w-full flex flex-col items-center py-12 bg-white">
-      <h1 className="text-heading mb-2">The Company we Keep</h1>
-      <p className="text-body mb-4">Trusted by 51+ companies</p>
+    <section className="w-full flex flex-col items-center py-8 sm:py-12 bg-white px-4 sm:px-0">
+      <h1 className="text-xl sm:text-2xl md:text-heading mb-2 text-center">The Company we Keep</h1>
+      <p className="text-sm sm:text-base md:text-body mb-4 text-center">Trusted by 51+ companies</p>
       <Swiper
         modules={[Autoplay]}
-        spaceBetween={20}
+        spaceBetween={10}
         slidesPerView={2}
         autoplay={{ delay: 2000, disableOnInteraction: false }}
         breakpoints={{
-          640: { slidesPerView: 3 },
-          1024: { slidesPerView: 7 },
+          480: { slidesPerView: 3, spaceBetween: 15 },
+          640: { slidesPerView: 4, spaceBetween: 20 },
+          768: { slidesPerView: 5, spaceBetween: 20 },
+          1024: { slidesPerView: 6, spaceBetween: 20 },
+          1280: { slidesPerView: 7, spaceBetween: 20 },
         }}
         loop={true}
         className="w-full max-w-6xl"
       >
         {companies.map((company, idx) => (
           <SwiperSlide key={idx} className="flex items-center justify-center">
-            <div className="h-24 w-32 flex items-center justify-center  rounded  p-2">
+            <div className="h-16 sm:h-20 md:h-24 w-20 sm:w-24 md:w-32 flex items-center justify-center rounded p-2">
               <Image
                 width={100}
                 height={100}
                 src={company.logo}
                 alt={company.name}
-                className="object-contain max-h-full max-w-full  hover:grayscale-0 transition duration-300"
+                className="object-contain max-h-full max-w-full hover:grayscale-0 transition duration-300"
               />
             </div>
           </SwiperSlide>

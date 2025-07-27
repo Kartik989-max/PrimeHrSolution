@@ -1,8 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import dbConnect from '@/utils/dbConnect';
+// Import all models to ensure they're registered
+import '@/models/User';
+import '@/models/Job';
 import JobApplication from '@/models/JobApplication';
-import Job from '@/models/Job';
-import User from '@/models/User';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -50,6 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const total = await JobApplication.countDocuments(filter);
 
     // Get all jobs for filter dropdown
+    const { default: Job } = await import('@/models/Job');
     const jobs = await Job.find({}, 'title company');
 
     // Get status counts for summary

@@ -80,7 +80,7 @@ export default function JobsPage() {
         );
         setJobs(jobsWithApplicationStatus);
       } else {
-        setJobs(data);
+      setJobs(data);
       }
     } catch (error) {
       console.error('Error fetching jobs:', error);
@@ -335,12 +335,12 @@ export default function JobsPage() {
                         )}
                       </button>
                     ) : (
-                      <button
-                        onClick={() => handleApplyJob(job)}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                      >
-                        Apply Now
-                      </button>
+                    <button
+                      onClick={() => handleApplyJob(job)}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Apply Now
+                    </button>
                     )}
                   </div>
                 </div>
@@ -433,15 +433,15 @@ export default function JobsPage() {
                     )}
                   </button>
                 ) : (
-                  <button
-                    onClick={() => {
-                      setShowJobModal(false);
-                      handleApplyJob(selectedJob);
-                    }}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                  >
-                    Apply Now
-                  </button>
+                <button
+                  onClick={() => {
+                    setShowJobModal(false);
+                    handleApplyJob(selectedJob);
+                  }}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  Apply Now
+                </button>
                 )}
               </div>
             </div>
