@@ -39,7 +39,7 @@ export default function Privacy() {
             <section className="mb-8">
               <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-4">1. Introduction</h2>
               <p className="text-gray-700 mb-4 leading-relaxed">
-                Prime HR Solutions ("we," "our," or "us") is committed to protecting your privacy and ensuring the security 
+                Prime HR Solutions (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is committed to protecting your privacy and ensuring the security 
                 of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard 
                 your information when you visit our website or use our services.
               </p>
@@ -195,7 +195,7 @@ export default function Privacy() {
 
             {/* Children's Privacy */}
             <section className="mb-8">
-              <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-4">10. Children's Privacy</h2>
+              <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-4">10. Children&apos;s Privacy</h2>
               <p className="text-gray-700 leading-relaxed">
                 Our services are not intended for children under the age of 18. We do not knowingly collect personal 
                 information from children under 18. If you believe we have collected information from a child under 18, 
@@ -209,7 +209,7 @@ export default function Privacy() {
               <p className="text-gray-700 mb-4 leading-relaxed">
                 We may update this Privacy Policy from time to time to reflect changes in our practices or applicable laws. 
                 We will notify you of any material changes by posting the updated policy on our website and updating the 
-                "Last updated" date.
+                &quot;Last updated&quot; date.
               </p>
               <p className="text-gray-700 leading-relaxed">
                 We encourage you to review this Privacy Policy periodically to stay informed about how we protect your information.

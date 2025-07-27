@@ -1,6 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { v2 as cloudinary } from 'cloudinary';
 
+interface CloudinaryResource {
+  public_id: string;
+  secure_url: string;
+  bytes: number;
+  format: string;
+  created_at: string;
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -46,7 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       config: configStatus,
       uploads: {
         total: result.resources.length,
-        files: result.resources.map((resource: any) => ({
+        files: result.resources.map((resource: CloudinaryResource) => ({
           name: resource.public_id,
           url: resource.secure_url,
           size: resource.bytes,

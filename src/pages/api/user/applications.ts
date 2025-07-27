@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import dbConnect from '@/utils/dbConnect';
 import JobApplication from '@/models/JobApplication';
-import Job from '@/models/Job';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {

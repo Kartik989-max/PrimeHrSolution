@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { FaLock, FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
 
@@ -16,27 +16,27 @@ export default function ResetPassword() {
   const [success, setSuccess] = useState(false);
   const [isValidToken, setIsValidToken] = useState(false);
 
-  useEffect(() => {
-    if (token) {
-      // Verify the token is valid
-      verifyToken();
-    }
-  }, [token]);
-
-  const verifyToken = async () => {
+  const verifyToken = useCallback(async () => {
     try {
       const response = await fetch(`/api/auth/verify-reset-token?token=${token}`);
-      const data = await response.json();
+      // const data = await response.json();
       
       if (response.ok) {
         setIsValidToken(true);
       } else {
         setError('Invalid or expired reset link. Please request a new one.');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to verify reset link.');
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    if (token) {
+      // Verify the token is valid
+      verifyToken();
+    }
+  }, [verifyToken,token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

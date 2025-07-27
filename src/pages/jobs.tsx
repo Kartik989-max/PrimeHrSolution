@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { FiMapPin, FiBriefcase, FiEye, FiCalendar, FiX } from 'react-icons/fi';
 import LoginModal from '@/components/LoginModal';
 import RegisterModal from '@/components/RegisterModal';
@@ -44,13 +44,7 @@ export default function JobsPage() {
   const [showApplicationModal, setShowApplicationModal] = useState(false);
   const [error, setError] = useState<AppError | null>(null);
 
-  useEffect(() => {
-    fetchJobs();
-  }, [user]); // Refetch jobs when user changes (login/logout)
-
-
-
-  const fetchJobs = async () => {
+  const fetchJobs = useCallback(async () => {
     try {
       const response = await fetch('/api/job');
       if (!response.ok) {
@@ -88,7 +82,11 @@ export default function JobsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    fetchJobs();
+  }, [fetchJobs]);
 
   const handleViewJob = async (job: Job) => {
     setSelectedJob(job);

@@ -39,7 +39,7 @@ export default function Terms() {
             <section className="mb-8">
               <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-4">1. Introduction</h2>
               <p className="text-gray-700 mb-4 leading-relaxed">
-                Welcome to Prime HR Solutions. These Terms of Service ("Terms") govern your use of our website and services. 
+                Welcome to Prime HR Solutions. These Terms of Service (&quot;Terms&quot;) govern your use of our website and services. 
                 By accessing or using our services, you agree to be bound by these Terms and all applicable laws and regulations.
               </p>
               <p className="text-gray-700 leading-relaxed">
@@ -130,7 +130,7 @@ export default function Terms() {
                 <li>Infringing on intellectual property rights</li>
                 <li>Transmitting harmful, offensive, or inappropriate content</li>
                 <li>Attempting to gain unauthorized access to our systems</li>
-                <li>Interfering with other users' use of our services</li>
+                <li>Interfering with other user&apos;s use of our services</li>
               </ul>
             </section>
 

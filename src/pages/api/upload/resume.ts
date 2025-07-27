@@ -3,6 +3,15 @@ import multer from 'multer';
 import { NextApiRequestWithFile } from '@/types/upload';
 import { v2 as cloudinary } from 'cloudinary';
 
+interface CloudinaryUploadResult {
+  secure_url: string;
+  public_id: string;
+  format: string;
+  resource_type: string;
+  created_at: string;
+  bytes: number;
+}
+
 // Configure Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -29,9 +38,9 @@ const upload = multer({
 });
 
 // Helper function to run multer middleware
-const runMiddleware = (req: NextApiRequest, res: NextApiResponse, fn: any) => {
+const runMiddleware = (req: NextApiRequest, res: NextApiResponse, fn: unknown) => {
   return new Promise((resolve, reject) => {
-    fn(req, res, (result: any) => {
+    (fn as (req: NextApiRequest, res: NextApiResponse, callback: (result?: unknown) => void) => void)(req, res, (result?: unknown) => {
       if (result instanceof Error) {
         return reject(result);
       }
@@ -149,10 +158,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       uploadStream.end(file.buffer);
     });
 
+    const result = uploadResult as CloudinaryUploadResult;
     res.status(200).json({
       message: 'Resume uploaded successfully',
-      url: (uploadResult as any).secure_url,
-      public_id: (uploadResult as any).public_id,
+      url: result.secure_url,
+      public_id: result.public_id,
       format: fileExtension
     });
 

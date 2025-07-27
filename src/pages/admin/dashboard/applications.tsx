@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { FiSearch, FiFilter, FiEye, FiDownload, FiCalendar, FiUser, FiBriefcase, FiMail, FiPhone, FiFileText, FiCheck, FiX, FiClock, FiStar, FiAlertCircle, FiFile } from 'react-icons/fi';
+import React, { useEffect, useState, useCallback } from 'react';
+import { FiSearch, FiDownload, FiUser, FiCheck, FiX, FiClock, FiStar, FiAlertCircle, FiFile, FiEye } from 'react-icons/fi';
 import * as XLSX from 'xlsx';
 
 interface JobApplication {
@@ -63,19 +63,7 @@ export default function ApplicationsPage() {
   const [notes, setNotes] = useState('');
   const [exportingExcel, setExportingExcel] = useState(false);
 
-  useEffect(() => {
-    // Check if there's a jobId in the URL query parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const jobIdFromUrl = urlParams.get('jobId');
-    
-    if (jobIdFromUrl && jobFilter === 'all') {
-      setJobFilter(jobIdFromUrl);
-    }
-    
-    fetchApplications();
-  }, [currentPage, searchTerm, statusFilter, jobFilter]);
-
-  const fetchApplications = async () => {
+  const fetchApplications = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
@@ -100,7 +88,19 @@ export default function ApplicationsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, searchTerm, statusFilter, jobFilter]);
+
+  useEffect(() => {
+    // Check if there's a jobId in the URL query parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const jobIdFromUrl = urlParams.get('jobId');
+    
+    if (jobIdFromUrl && jobFilter === 'all') {
+      setJobFilter(jobIdFromUrl);
+    }
+    
+    fetchApplications();
+  }, [fetchApplications, jobFilter]);
 
   const handleStatusUpdate = async () => {
     if (!selectedApplication || !newStatus) return;
@@ -126,7 +126,7 @@ export default function ApplicationsPage() {
       setApplications(prev => 
         prev.map(app => 
           app._id === selectedApplication._id 
-            ? { ...app, status: newStatus as any, notes, reviewedAt: new Date().toISOString() }
+            ? { ...app, status: newStatus as JobApplication['status'], notes, reviewedAt: new Date().toISOString() }
             : app
         )
       );
@@ -193,28 +193,154 @@ export default function ApplicationsPage() {
       const data = await response.json();
       const allApplications = data.applications;
 
-      // Prepare data for export
-      const exportData = allApplications.map((application: JobApplication) => ({
-        'Applicant Name': `${application.firstName} ${application.lastName}`,
-        'Email': application.email,
-        'Phone': application.phone,
-        'Job Title': application.jobId?.title || 'Unknown Job',
-        'Company': application.jobId?.company || 'Unknown Company',
-        'Location': application.jobId?.location || 'Unknown Location',
-        'Job Type': application.jobId?.type || 'Unknown Type',
-        'Applied Date': formatDate(application.appliedAt),
-        'Status': application.status.charAt(0).toUpperCase() + application.status.slice(1),
-        'Cover Letter': application.coverLetter || 'N/A',
-        'Resume Link': `${window.location.origin}/api/resume/${application._id}`,
-        'Notes': application.notes || 'N/A'
-      }));
-
       // Create workbook and worksheet
       const workbook = XLSX.utils.book_new();
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      
+      // Create a new worksheet with headers and data
+      const headers = [
+        'S.No',
+        'Applicant Name',
+        'Email',
+        'Phone',
+        'Job Title',
+        'Company',
+        'Location',
+        'Job Type',
+        'Applied Date',
+        'Status',
+        'Cover Letter',
+        'Resume Link',
+        'Notes'
+      ];
+
+      // Prepare data with serial numbers
+      const exportData = allApplications.map((application: JobApplication, index: number) => [
+        index + 1, // S.No
+        `${application.firstName} ${application.lastName}`,
+        application.email,
+        application.phone,
+        application.jobId?.title || 'Unknown Job',
+        application.jobId?.company || 'Unknown Company',
+        application.jobId?.location || 'Unknown Location',
+        application.jobId?.type || 'Unknown Type',
+        formatDate(application.appliedAt),
+        application.status.charAt(0).toUpperCase() + application.status.slice(1),
+        application.coverLetter || 'N/A',
+        `${window.location.origin}/api/resume/${application._id}`,
+        application.notes || 'N/A'
+      ]);
+
+      // Add headers to the beginning
+      const allData = [headers, ...exportData];
+      
+      // Create worksheet from array data
+      const worksheet = XLSX.utils.aoa_to_sheet(allData);
+
+      // Define styles for different elements
+      const headerStyle = {
+        font: { 
+          bold: true, 
+          color: { rgb: "FFFFFF" },
+          size: 12
+        },
+        fill: { 
+          fgColor: { rgb: "2E5BBA" } // Blue background
+        },
+        alignment: { 
+          horizontal: "center",
+          vertical: "center"
+        },
+        border: {
+          top: { style: "thin", color: { rgb: "000000" } },
+          bottom: { style: "thin", color: { rgb: "000000" } },
+          left: { style: "thin", color: { rgb: "000000" } },
+          right: { style: "thin", color: { rgb: "000000" } }
+        }
+      };
+
+      const serialNumberStyle = {
+        font: { 
+          bold: true,
+          color: { rgb: "000000" },
+          size: 11
+        },
+        fill: { 
+          fgColor: { rgb: "F0F0F0" } // Light gray background
+        },
+        alignment: { 
+          horizontal: "center",
+          vertical: "center"
+        },
+        border: {
+          top: { style: "thin", color: { rgb: "CCCCCC" } },
+          bottom: { style: "thin", color: { rgb: "CCCCCC" } },
+          left: { style: "thin", color: { rgb: "CCCCCC" } },
+          right: { style: "thin", color: { rgb: "CCCCCC" } }
+        }
+      };
+
+      const dataStyle = {
+        font: { 
+          size: 10,
+          color: { rgb: "000000" }
+        },
+        alignment: { 
+          vertical: "center"
+        },
+        border: {
+          top: { style: "thin", color: { rgb: "CCCCCC" } },
+          bottom: { style: "thin", color: { rgb: "CCCCCC" } },
+          left: { style: "thin", color: { rgb: "CCCCCC" } },
+          right: { style: "thin", color: { rgb: "CCCCCC" } }
+        }
+      };
+
+      const statusStyles = {
+        pending: { fill: { fgColor: { rgb: "FFF2CC" } } }, // Light yellow
+        reviewed: { fill: { fgColor: { rgb: "CCE5FF" } } }, // Light blue
+        shortlisted: { fill: { fgColor: { rgb: "D4EDDA" } } }, // Light green
+        rejected: { fill: { fgColor: { rgb: "F8D7DA" } } }, // Light red
+        hired: { fill: { fgColor: { rgb: "E2D9F3" } } } // Light purple
+      };
+
+      // Apply styles to cells
+      const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+      
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const headerCell = XLSX.utils.encode_cell({ r: 0, c: col });
+        worksheet[headerCell].s = headerStyle;
+      }
+
+      // Apply styles to data rows
+      for (let row = 1; row <= range.e.r; row++) {
+        for (let col = range.s.c; col <= range.e.c; col++) {
+          const cell = XLSX.utils.encode_cell({ r: row, c: col });
+          if (worksheet[cell]) {
+            // Apply base data style
+            worksheet[cell].s = { ...dataStyle };
+            
+            // Special styling for serial number column
+            if (col === 0) {
+              worksheet[cell].s = { ...serialNumberStyle };
+            }
+            
+            // Special styling for status column (column 9)
+            if (col === 9 && worksheet[cell].v) {
+              const status = worksheet[cell].v.toLowerCase();
+              if (statusStyles[status as keyof typeof statusStyles]) {
+                worksheet[cell].s = { 
+                  ...dataStyle, 
+                  ...statusStyles[status as keyof typeof statusStyles] 
+                };
+              }
+            }
+          }
+        }
+      }
 
       // Set column widths
       const columnWidths = [
+        { wch: 8 },  // S.No
         { wch: 20 }, // Applicant Name
         { wch: 25 }, // Email
         { wch: 15 }, // Phone
@@ -230,13 +356,20 @@ export default function ApplicationsPage() {
       ];
       worksheet['!cols'] = columnWidths;
 
+      // Set row heights
+      worksheet['!rows'] = [
+        { hpt: 25 }, // Header row height
+        ...Array(allApplications.length).fill({ hpt: 20 }) // Data row heights
+      ];
+
       // Add worksheet to workbook
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Applications');
 
-      // Generate filename
+      // Generate filename with timestamp
       const jobFilterText = jobFilter !== 'all' ? filters?.jobs.find(j => j._id === jobFilter)?.title.replace(/[^a-zA-Z0-9]/g, '_') : 'All_Jobs';
       const statusFilterText = statusFilter !== 'all' ? statusFilter : 'All_Status';
-      const filename = `Applications_${jobFilterText}_${statusFilterText}_${new Date().toISOString().split('T')[0]}.xlsx`;
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+      const filename = `Prime_HR_Applications_${jobFilterText}_${statusFilterText}_${timestamp}.xlsx`;
 
       // Save the file
       XLSX.writeFile(workbook, filename);
@@ -257,7 +390,7 @@ export default function ApplicationsPage() {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 text-black">
       {/* Header */}
       <div className="flex justify-between items-start mb-6">
         <div>
@@ -405,10 +538,10 @@ export default function ApplicationsPage() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
                       <div className="text-sm font-medium text-gray-900">
-                        {application.jobId.title}
+                        {application.jobId?.title || 'Job Not Found'}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {application.jobId.company} • {application.jobId.location}
+                        {application.jobId ? `${application.jobId.company} • ${application.jobId.location}` : 'Job details unavailable'}
                       </div>
                     </div>
                   </td>
@@ -466,7 +599,7 @@ export default function ApplicationsPage() {
               <button
                 onClick={() => setCurrentPage(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+    text-black  className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Previous
               </button>
@@ -570,19 +703,19 @@ export default function ApplicationsPage() {
                   <div className="space-y-3">
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Position</label>
-                      <p className="text-sm text-gray-900">{selectedApplication.jobId.title}</p>
+                      <p className="text-sm text-gray-900">{selectedApplication.jobId?.title || 'Job Not Found'}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Company</label>
-                      <p className="text-sm text-gray-900">{selectedApplication.jobId.company}</p>
+                      <p className="text-sm text-gray-900">{selectedApplication.jobId?.company || 'Company information unavailable'}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Location</label>
-                      <p className="text-sm text-gray-900">{selectedApplication.jobId.location}</p>
+                      <p className="text-sm text-gray-900">{selectedApplication.jobId?.location || 'Location information unavailable'}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Type</label>
-                      <p className="text-sm text-gray-900">{selectedApplication.jobId.type}</p>
+                      <p className="text-sm text-gray-900">{selectedApplication.jobId?.type || 'Type information unavailable'}</p>
                     </div>
                   </div>
                 </div>

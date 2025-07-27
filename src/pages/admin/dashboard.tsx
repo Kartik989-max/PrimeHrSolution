@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FiBriefcase, FiUser, FiMail, FiAward, FiFileText } from "react-icons/fi";
+import { FiBriefcase, FiUser, FiMail, FiFileText } from "react-icons/fi";
 
 // Job type definition
 export type Job = {
@@ -13,9 +13,38 @@ export type Job = {
   requirements?: string[];
 };
 
+// Application type definition
+interface JobApplication {
+  _id: string;
+  jobId: {
+    _id: string;
+    title: string;
+    company: string;
+    location: string;
+    type: string;
+  };
+  userId: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  coverLetter: string;
+  resumeUrl: string;
+  resumePublicId: string;
+  status: 'pending' | 'reviewed' | 'shortlisted' | 'rejected' | 'hired';
+  appliedAt: string;
+  reviewedAt?: string;
+  notes?: string;
+}
+
 export default function AdminDashboard() {
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [applications, setApplications] = useState<any[]>([]);
+  const [applications, setApplications] = useState<JobApplication[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Fetch jobs and applications
@@ -42,23 +71,35 @@ export default function AdminDashboard() {
     fetchData();
   }, []);
 
+  // Show loading spinner
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading dashboard data...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       {/* Page Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
         <p className="text-gray-500 mt-2">Welcome, Admin. Here&apos;s an overview of your platform.</p>
-          </div>
+      </div>
 
-        {/* Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-6">
+      {/* Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-6">
         <DashboardCard icon={<FiBriefcase />} label="Total Jobs" value={jobs.length} />
         <DashboardCard icon={<FiFileText />} label="Applications" value={applications.length} />
         <DashboardCard icon={<FiUser />} label="Pending Reviews" value={applications.filter(app => app.status === 'pending').length} />
         <DashboardCard icon={<FiMail />} label="Messages" value={0} />
-        </div>
+      </div>
       
-        {/* Summary Cards */}
+      {/* Summary Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <SummaryCard
           title="Recent Job Postings"
@@ -68,7 +109,7 @@ export default function AdminDashboard() {
           title="Recent Applications"
           items={applications.slice(0, 5).map(app => `${app.firstName} ${app.lastName} - ${app.jobId?.title || 'Unknown Job'}`)}
         />
-        </div>
+      </div>
     </>
   );
 }

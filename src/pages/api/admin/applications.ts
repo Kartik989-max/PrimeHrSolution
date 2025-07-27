@@ -5,6 +5,25 @@ import '@/models/User';
 import '@/models/Job';
 import JobApplication from '@/models/JobApplication';
 
+interface ApplicationFilter {
+  status?: string;
+  jobId?: string;
+  $or?: Array<{
+    firstName?: RegExp;
+    lastName?: RegExp;
+    email?: RegExp;
+  }>;
+}
+
+interface StatusCount {
+  _id: string;
+  count: number;
+}
+
+interface StatusSummary {
+  [key: string]: number;
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -19,13 +38,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const skip = (pageNum - 1) * limitNum;
 
     // Build filter object
-    const filter: any = {};
+    const filter: ApplicationFilter = {};
     
-    if (status && status !== 'all') {
+    if (status && status !== 'all' && typeof status === 'string') {
       filter.status = status;
     }
     
-    if (jobId && jobId !== 'all') {
+    if (jobId && jobId !== 'all' && typeof jobId === 'string') {
       filter.jobId = jobId;
     }
 
@@ -41,14 +60,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Get applications with populated job and user data
     const applications = await JobApplication.find(filter)
-      .populate('jobId', 'title company location type')
-      .populate('userId', 'firstName lastName email')
+      .populate({
+        path: 'jobId',
+        select: 'title company location type',
+        // Handle cases where job might have been deleted
+        options: { lean: true }
+      })
+      .populate({
+        path: 'userId',
+        select: 'firstName lastName email',
+        // Handle cases where user might have been deleted
+        options: { lean: true }
+      })
       .sort({ appliedAt: -1 })
       .skip(skip)
       .limit(limitNum);
 
     // Get total count for pagination
     const total = await JobApplication.countDocuments(filter);
+
+    // Transform applications to handle null populated fields
+    const transformedApplications = applications.map(app => ({
+      ...app.toObject(),
+      jobId: app.jobId || null,
+      userId: app.userId || null
+    }));
 
     // Get all jobs for filter dropdown
     const { default: Job } = await import('@/models/Job');
@@ -59,13 +95,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       { $group: { _id: '$status', count: { $sum: 1 } } }
     ]);
 
-    const statusSummary = statusCounts.reduce((acc: any, curr) => {
+    const statusSummary = statusCounts.reduce((acc: StatusSummary, curr: StatusCount) => {
       acc[curr._id] = curr.count;
       return acc;
-    }, {});
+    }, {} as StatusSummary);
 
     return res.status(200).json({
-      applications,
+      applications: transformedApplications,
       pagination: {
         currentPage: pageNum,
         totalPages: Math.ceil(total / limitNum),

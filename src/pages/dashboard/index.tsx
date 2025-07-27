@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
 import { FaUser, FaBriefcase, FaEnvelope, FaPhone, FaCalendar, FaFileAlt, FaEye, FaDownload, FaMapMarkerAlt } from 'react-icons/fa';
@@ -29,13 +29,7 @@ export default function Dashboard() {
     }
   }, [user, isLoading, router]);
 
-  useEffect(() => {
-    if (user?.id) {
-      fetchUserApplications();
-    }
-  }, [user?.id]);
-
-  const fetchUserApplications = async () => {
+  const fetchUserApplications = useCallback(async () => {
     try {
       const response = await fetch(`/api/user/applications?userId=${user?.id}`);
       if (response.ok) {
@@ -47,7 +41,13 @@ export default function Dashboard() {
     } finally {
       setLoadingApplications(false);
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchUserApplications();
+    }
+  }, [fetchUserApplications,user?.id]);
 
   const getStatusColor = (status: string) => {
     switch (status) {

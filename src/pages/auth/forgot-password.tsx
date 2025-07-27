@@ -44,7 +44,7 @@ export default function ForgotPassword() {
         <div className="text-center">
           <h2 className="text-2xl sm:text-3xl md:text-heading text-gray-900 mb-2 sm:mb-3">Forgot Password</h2>
           <p className="text-sm sm:text-base md:text-body text-gray-600">
-            Enter your email address and we'll send you a link to reset your password
+            Enter your email address and we&apos;ll send you a link to reset your password
           </p>
         </div>
       </div>
@@ -113,13 +113,13 @@ export default function ForgotPassword() {
                   📧 Check your email
                 </p>
                 <p className="text-xs sm:text-sm text-blue-700">
-                  We've sent a password reset link to your email address.
+                  We&apos;ve sent a password reset link to your email address.
                 </p>
               </div>
               
               <div className="p-3 bg-gray-50 rounded-lg">
                 <p className="text-xs sm:text-sm text-gray-600 mb-3">
-                  Didn't receive the email? Check your spam folder or try again.
+                  Didn&apos;t receive the email? Check your spam folder or try again.
                 </p>
                 <button
                   onClick={() => {

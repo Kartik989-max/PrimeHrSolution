@@ -1,7 +1,21 @@
 import { useState } from 'react';
 
+interface CloudinaryStatus {
+  success?: boolean;
+  error?: string;
+  message?: string;
+  cloud_name?: string;
+  api_key?: string;
+  api_secret?: string;
+  uploads?: Array<{
+    public_id: string;
+    secure_url: string;
+    created_at: string;
+  }>;
+}
+
 export default function CheckCloudinary() {
-  const [cloudinaryStatus, setCloudinaryStatus] = useState<any>(null);
+  const [cloudinaryStatus, setCloudinaryStatus] = useState<CloudinaryStatus | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const checkCloudinary = async () => {
@@ -51,8 +65,8 @@ export default function CheckCloudinary() {
               <ul className="list-disc list-inside ml-4 space-y-1">
                 <li>Go to <a href="https://cloudinary.com/console" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Cloudinary Console</a></li>
                 <li>Sign in to your account</li>
-                <li>Click "Media Library" in the left sidebar</li>
-                <li>Look for the "resumes" folder</li>
+                <li>Click &quot;Media Library&quot; in the left sidebar</li>
+                <li>Look for the &quot;resumes&quot; folder</li>
                 <li>Your uploaded files should appear here</li>
               </ul>
             </div>
@@ -60,9 +74,9 @@ export default function CheckCloudinary() {
             <div>
               <h3 className="font-semibold">2. Server Console Logs</h3>
               <ul className="list-disc list-inside ml-4 space-y-1">
-                <li>Check your terminal/console where you're running the dev server</li>
+                <li>Check your terminal/console where you&apos;re running the dev server</li>
                 <li>Look for upload logs when you submit a resume</li>
-                <li>You should see "Starting Cloudinary upload" and "Cloudinary upload successful" messages</li>
+                <li>You should see &quot;Starting Cloudinary upload&quot; and &quot;Cloudinary upload successful&quot; messages</li>
               </ul>
             </div>
 

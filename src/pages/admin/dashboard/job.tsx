@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 // import { useRouter } from 'next/router';
-import { FiPlus, FiEdit, FiTrash2, FiEye, FiSearch, FiFilter, FiX, FiUsers, FiEye as FiViewIcon, FiFileText, FiDownload, FiCalendar, FiUser, FiCheck, FiClock, FiStar, FiAlertCircle, FiFile } from 'react-icons/fi';
+import { FiPlus, FiEdit, FiTrash2, FiEye, FiSearch, FiFilter, FiX, FiUsers, FiEye as FiViewIcon, FiFileText, FiDownload, FiUser, FiCheck, FiClock, FiStar, FiAlertCircle, FiFile } from 'react-icons/fi';
 import * as XLSX from 'xlsx';
 
 interface Job {
@@ -25,6 +25,34 @@ interface JobFormData {
   requirements: string[];
 }
 
+interface JobApplication {
+  _id: string;
+  jobId: {
+    _id: string;
+    title: string;
+    company: string;
+    location: string;
+    type: string;
+  };
+  userId: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  coverLetter: string;
+  resumeUrl: string;
+  resumePublicId: string;
+  status: 'pending' | 'reviewed' | 'shortlisted' | 'rejected' | 'hired';
+  appliedAt: string;
+  reviewedAt?: string;
+  notes?: string;
+}
+
 export default function JobManagement() {
   // const router = useRouter();
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -47,17 +75,17 @@ export default function JobManagement() {
   // Applications state
   const [showApplicationsModal, setShowApplicationsModal] = useState(false);
   const [selectedJobForApplications, setSelectedJobForApplications] = useState<Job | null>(null);
-  const [applications, setApplications] = useState<any[]>([]);
+  const [applications, setApplications] = useState<JobApplication[]>([]);
   const [applicationsLoading, setApplicationsLoading] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
-  const [selectedApplication, setSelectedApplication] = useState<any>(null);
-  const [newStatus, setNewStatus] = useState('');
+  const [selectedApplication, setSelectedApplication] = useState<JobApplication | null>(null);
+  const [newStatus, setNewStatus] = useState<JobApplication['status']>('pending');
   const [notes, setNotes] = useState('');
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [applicationJobFilter, setApplicationJobFilter] = useState('all');
   const [applicationStatusFilter, setApplicationStatusFilter] = useState('all');
   const [showApplicationDetailModal, setShowApplicationDetailModal] = useState(false);
-  const [selectedApplicationForDetail, setSelectedApplicationForDetail] = useState<any>(null);
+  const [selectedApplicationForDetail, setSelectedApplicationForDetail] = useState<JobApplication | null>(null);
   const [exportingExcel, setExportingExcel] = useState(false);
 
   // Fetch jobs
@@ -251,13 +279,13 @@ export default function JobManagement() {
       setApplications(prev => 
         prev.map(app => 
           app._id === selectedApplication._id 
-            ? { ...app, status: newStatus, notes, reviewedAt: new Date().toISOString() }
+            ? { ...app, status: newStatus as JobApplication['status'], notes, reviewedAt: new Date().toISOString() }
             : app
         )
       );
 
       setShowStatusModal(false);
-      setNewStatus('');
+      setNewStatus('pending');
       setNotes('');
       setSelectedApplication(null);
     } catch (error) {
@@ -986,7 +1014,7 @@ export default function JobManagement() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
                   <select
                     value={newStatus}
-                    onChange={(e) => setNewStatus(e.target.value)}
+                    onChange={(e) => setNewStatus(e.target.value as JobApplication['status'])}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="pending">Pending</option>
