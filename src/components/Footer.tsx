@@ -59,13 +59,13 @@ export default function Footer() {
               </div>
               <div className="flex items-center justify-center lg:justify-start gap-2 text-sm sm:text-base">
                 <FaPhoneAlt className="text-blue-500 flex-shrink-0" />
-                <a href="tel:+911234567890" className="hover:text-blue-700 transition-colors">
-                  +91 12345 67890
+                <a href="tel:+917048932037" className="hover:text-blue-700 transition-colors">
+                  +91 70489 32037
                 </a>
               </div>
               <div className="text-sm sm:text-base">
-                Mail: <a href="mailto:info@primehrsolution.com" className="text-blue-700 font-semibold hover:underline break-all">
-                  info@primehrsolution.com
+                Mail: <a href="mailto:mail@primehrsolutions.com" className="text-blue-700 font-semibold hover:underline break-all">
+                  mail@primehrsolutions.com
                 </a>
               </div>
             </div>
