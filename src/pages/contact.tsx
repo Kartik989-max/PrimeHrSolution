@@ -124,7 +124,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-1">Phone</h3>
-                    <p className="text-body">+91 12345 67890</p>
+                    <p className="text-body">+91 70489 32037</p>
                     <p className="text-sm text-gray-500">Mon-Fri: 9:00 AM - 6:00 PM</p>
                   </div>
                 </div>
@@ -135,7 +135,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
-                    <p className="text-body">info@primehrsolution.com</p>
+                    <p className="text-body">mail@primehrsolutions.com</p>
                     <p className="text-sm text-gray-500">We&apos;ll respond within 24 hours</p>
                   </div>
                 </div>
