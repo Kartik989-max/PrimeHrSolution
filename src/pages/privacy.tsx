@@ -228,9 +228,8 @@ export default function Privacy() {
                   <strong>Prime HR Solutions</strong>
                 </p>
                 <p className="text-gray-700 mb-2">Delhi NCR, India</p>
-                <p className="text-gray-700 mb-2">Phone: +91 12345 67890</p>
-                <p className="text-gray-700 mb-2">Email: info@primehrsolution.com</p>
-                <p className="text-gray-700">Data Protection Officer: privacy@primehrsolution.com</p>
+                <p className="text-gray-700 mb-2">Phone: +91 70489 32037</p>
+                <p className="text-gray-700 mb-2">Email: mail@primehrsolutions.com</p>
               </div>
             </section>
 
