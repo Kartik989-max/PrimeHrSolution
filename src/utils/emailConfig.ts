@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { escapeHtml } from '@/lib/xss';
 
 // Email configuration for different providers
 const emailConfigs = {
@@ -91,7 +92,7 @@ export const emailTemplates = {
         <div style="padding: 30px; background-color: white;">
           <h3 style="color: #333; margin-bottom: 20px;">Password Reset Request</h3>
           <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
-            Hello ${userName},
+            Hello ${escapeHtml(userName)},
           </p>
           <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
             We received a request to reset your password for your Prime HR Solutions account. 

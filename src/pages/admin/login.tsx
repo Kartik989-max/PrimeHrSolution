@@ -1,27 +1,25 @@
-import { useState } from "react";
-import { useRouter } from "next/router";
-import { FaUser, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
-import { AdminData } from "@/types/admin";
+import { useState } from 'react';
+import { useRouter } from 'next/router';
+import { FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 
 export default function AdminLogin() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
+    setError('');
 
     try {
       const response = await fetch('/api/admin/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
 
@@ -31,14 +29,7 @@ export default function AdminLogin() {
         throw new Error(data.error || 'Login failed');
       }
 
-      // Store admin authentication with proper typing
-      const adminData: AdminData = data.admin;
-      localStorage.setItem('isAdmin', 'true');
-      localStorage.setItem('adminData', JSON.stringify(adminData));
-
-      // Redirect to admin dashboard
-      router.push("/admin/dashboard");
-      
+      router.push('/admin/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -74,7 +65,7 @@ export default function AdminLogin() {
                 type="text"
                 placeholder="Enter admin username"
                 value={username}
-                onChange={e => setUsername(e.target.value)}
+                onChange={(e) => setUsername(e.target.value)}
                 className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 required
               />
@@ -94,7 +85,7 @@ export default function AdminLogin() {
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Enter password"
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
                 className="appearance-none relative block w-full pl-10 pr-10 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 required
               />
@@ -129,11 +120,9 @@ export default function AdminLogin() {
         </form>
 
         <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
-            Secure admin access only
-          </p>
+          <p className="text-sm text-gray-600">Secure admin access only</p>
         </div>
       </div>
     </div>
   );
-} 
+}

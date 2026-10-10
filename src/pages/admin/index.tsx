@@ -5,19 +5,24 @@ export default function AdminIndex() {
   const router = useRouter();
 
   useEffect(() => {
-    // Check if admin is logged in
-    const isAdmin = localStorage.getItem('isAdmin');
-    
-    if (isAdmin === 'true') {
-      // Admin is logged in, redirect to dashboard
-      router.replace('/admin/dashboard');
-    } else {
-      // Admin is not logged in, redirect to login
+    const checkAdmin = async () => {
+      try {
+        const response = await fetch('/api/auth/session', { credentials: 'include' });
+        if (response.ok) {
+          const { user } = await response.json();
+          if (user?.role === 'admin') {
+            router.replace('/admin/dashboard');
+            return;
+          }
+        }
+      } catch {
+        // ignore
+      }
       router.replace('/admin/login');
-    }
+    };
+    checkAdmin();
   }, [router]);
 
-  // Show loading while redirecting
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="text-center">
@@ -26,4 +31,4 @@ export default function AdminIndex() {
       </div>
     </div>
   );
-} 
+}

@@ -141,7 +141,6 @@ export default function JobApplicationForm({ job, isOpen, onClose, onSubmitSucce
         },
         body: JSON.stringify({
           jobId: job._id,
-          userId: user.id,
           firstName: applicationForm.firstName,
           lastName: applicationForm.lastName,
           email: applicationForm.email,

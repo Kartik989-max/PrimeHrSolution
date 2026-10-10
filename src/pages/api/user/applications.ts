@@ -1,8 +1,8 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { requireAuth } from '@/lib/auth';
 import dbConnect from '@/utils/dbConnect';
 import JobApplication from '@/models/JobApplication';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default requireAuth(async (req, res) => {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -10,19 +10,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     await dbConnect();
 
-    const { userId } = req.query;
+    // Always use the authenticated user's ID; ignore any client-supplied userId (prevents IDOR).
+    const userId = req.user.id;
 
-    if (!userId) {
-      return res.status(400).json({ error: 'User ID is required' });
-    }
-
-    // Fetch applications with populated job details
     const applications = await JobApplication.find({ userId })
       .populate('jobId', 'title company location type postedAt')
-      .sort({ appliedAt: -1 });
+      .sort({ appliedAt: -1 })
+      .exec();
 
-    // Transform the data to include job details
-    const transformedApplications = applications.map(app => ({
+    const transformedApplications = applications.map((app) => ({
       id: app._id,
       jobId: app.jobId._id,
       jobTitle: app.jobId.title,
@@ -39,16 +35,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       status: app.status,
       appliedAt: app.appliedAt,
       reviewedAt: app.reviewedAt,
-      notes: app.notes
+      notes: app.notes,
     }));
 
-    res.status(200).json({
+    return res.status(200).json({
       applications: transformedApplications,
-      count: transformedApplications.length
+      count: transformedApplications.length,
     });
-
   } catch (error) {
     console.error('Error fetching user applications:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
-} 
+});

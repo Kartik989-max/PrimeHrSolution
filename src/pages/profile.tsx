@@ -66,7 +66,6 @@ export default function Profile() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'user-id': user?.id || '',
         },
         body: JSON.stringify(editForm),
       });
@@ -104,8 +103,14 @@ export default function Profile() {
       return;
     }
 
-    if (passwordForm.newPassword.length < 6) {
-      setError('New password must be at least 6 characters long');
+    if (passwordForm.newPassword.length < 8) {
+      setError('New password must be at least 8 characters long');
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (!/[A-Za-z]/.test(passwordForm.newPassword) || !/[0-9]/.test(passwordForm.newPassword)) {
+      setError('New password must contain at least one letter and one number');
       setIsSubmitting(false);
       return;
     }
@@ -115,7 +120,6 @@ export default function Profile() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'user-id': user?.id || '',
         },
         body: JSON.stringify({
           currentPassword: passwordForm.currentPassword,
@@ -163,7 +167,6 @@ export default function Profile() {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'user-id': user?.id || '',
         },
         body: JSON.stringify({
           password: deleteForm.password
