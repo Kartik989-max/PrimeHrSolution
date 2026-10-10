@@ -1,61 +1,44 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { v2 as cloudinary } from 'cloudinary';
+import { requireAdmin } from '@/lib/auth';
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+const ALLOWED_HOSTS = new Set<string>([
+  'res.cloudinary.com',
+  'api.cloudinary.com',
+  'cloudinary.com',
+]);
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default requireAdmin(async (req, res) => {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
     const { url } = req.query;
-    
-    if (!url) {
+
+    if (!url || typeof url !== 'string') {
       return res.status(400).json({ error: 'URL parameter is required' });
     }
 
-    console.log('Testing Cloudinary URL:', url);
-
-    // Test if the URL is accessible
+    let parsed: URL;
     try {
-      const response = await fetch(url as string, { method: 'HEAD' });
-      console.log('URL response status:', response.status);
-      console.log('URL response headers:', Object.fromEntries(response.headers.entries()));
-
-      if (response.ok) {
-        return res.status(200).json({
-          success: true,
-          status: response.status,
-          headers: Object.fromEntries(response.headers.entries()),
-          message: 'URL is accessible'
-        });
-      } else {
-        return res.status(400).json({
-          success: false,
-          status: response.status,
-          message: 'URL is not accessible'
-        });
-      }
-    } catch (fetchError) {
-      console.error('Fetch error:', fetchError);
-      return res.status(500).json({
-        success: false,
-        error: 'Failed to test URL',
-        details: fetchError instanceof Error ? fetchError.message : 'Unknown error'
-      });
+      parsed = new URL(url);
+    } catch {
+      return res.status(400).json({ error: 'Invalid URL' });
     }
 
+    const hostname = parsed.hostname.toLowerCase();
+    const isAllowed = ALLOWED_HOSTS.has(hostname) || hostname.endsWith('.cloudinary.com');
+    if (!isAllowed) {
+      return res.status(403).json({ error: 'URL hostname is not allowed' });
+    }
+
+    const response = await fetch(url, { method: 'HEAD' });
+
+    if (response.ok) {
+      return res.status(200).json({ success: true, status: response.status, message: 'URL is accessible' });
+    }
+    return res.status(400).json({ success: false, status: response.status, message: 'URL is not accessible' });
   } catch (error) {
     console.error('Test URL error:', error);
-    return res.status(500).json({ 
-      error: 'Internal server error',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    });
+    return res.status(500).json({ error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' });
   }
-} 
+});

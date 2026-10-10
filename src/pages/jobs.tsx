@@ -57,7 +57,7 @@ export default function JobsPage() {
         const jobsWithApplicationStatus = await Promise.all(
           data.map(async (job: Job) => {
             try {
-              const applicationResponse = await fetch(`/api/job/check-application?jobId=${job._id}&userId=${user.id}`);
+              const applicationResponse = await fetch(`/api/job/check-application?jobId=${job._id}`);
               if (applicationResponse.ok) {
                 const applicationData = await applicationResponse.json();
                 return {

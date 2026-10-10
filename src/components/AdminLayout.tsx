@@ -12,31 +12,37 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [adminData, setAdminData] = useState<AdminData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Admin authentication check
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const isAdmin = localStorage.getItem('isAdmin');
-      const adminDataStr = localStorage.getItem('adminData');
-
-      if (!isAdmin || isAdmin !== 'true') {
+    const checkAdmin = async () => {
+      try {
+        const response = await fetch('/api/auth/session', { credentials: 'include' });
+        if (!response.ok) {
+          router.replace('/admin/login');
+          return;
+        }
+        const { user } = await response.json();
+        if (user?.role !== 'admin') {
+          router.replace('/admin/login');
+          return;
+        }
+        setAdminData({ username: user.firstName || 'Admin', role: 'admin', lastLogin: new Date() });
+      } catch {
         router.replace('/admin/login');
         return;
+      } finally {
+        setIsLoading(false);
       }
+    };
 
-      if (adminDataStr) {
-        try {
-          setAdminData(JSON.parse(adminDataStr));
-        } catch (error) {
-          console.error('Error parsing admin data:', error);
-        }
-      }
-      setIsLoading(false);
-    }
+    checkAdmin();
   }, [router]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('isAdmin');
-    localStorage.removeItem('adminData');
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    } catch {
+      // ignore
+    }
     router.push('/admin/login');
   };
 
@@ -59,4 +65,4 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </main>
     </div>
   );
-} 
+}

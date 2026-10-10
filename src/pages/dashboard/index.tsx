@@ -30,8 +30,12 @@ export default function Dashboard() {
   }, [user, isLoading, router]);
 
   const fetchUserApplications = useCallback(async () => {
+    if (!user?.id) {
+      setLoadingApplications(false);
+      return;
+    }
     try {
-      const response = await fetch(`/api/user/applications?userId=${user?.id}`);
+      const response = await fetch('/api/user/applications', { credentials: 'include' });
       if (response.ok) {
         const data = await response.json();
         setApplications(data.applications || []);

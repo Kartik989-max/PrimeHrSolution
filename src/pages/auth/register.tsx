@@ -46,8 +46,14 @@ export default function Register() {
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters long');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!/[A-Za-z]/.test(formData.password) || !/[0-9]/.test(formData.password)) {
+      setError('Password must contain at least one letter and one number');
       setIsLoading(false);
       return;
     }
